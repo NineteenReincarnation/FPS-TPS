@@ -13,12 +13,12 @@
   <AT_EnabledTip>Display counters in the native bottom-right time controls. Takes effect immediately.</AT_EnabledTip>
   <AT_ShowFps>Show FPS</AT_ShowFps>
   <AT_ShowFpsTip>Rendered frames per second, using RimWorld's existing smoothed frame timing.</AT_ShowFpsTip>
-  <AT_ShowTps>Show TPS</AT_ShowTps>
-  <AT_ShowTpsTip>Uses the same tick-processing-time calculation as the native TPS counter. No sampling-window wait.</AT_ShowTpsTip>
+  <AT_ShowTps>Show actual TPS</AT_ShowTps>
+  <AT_ShowTpsTip>Completed tick deltas divided by real elapsed seconds. Never inferred from execution cost or capped to the target.</AT_ShowTpsTip>
   <AT_ShowTarget>Show target TPS in parentheses</AT_ShowTarget>
   <AT_ShowTargetTip>Read the current tick rate multiplier from the game; supports mods that patch this multiplier. Forced slowdown and idle speed changes update at the TPS interval.</AT_ShowTargetTip>
   <AT_ShowPercent>Show TPS target percentage</AT_ShowPercent>
-  <AT_ShowPercentTip>TPS divided by the current target TPS.</AT_ShowPercentTip>
+  <AT_ShowPercentTip>Measured actual TPS divided by the current target TPS.</AT_ShowPercentTip>
   <AT_ShowFrameTime>Show milliseconds per frame</AT_ShowFrameTime>
   <AT_ShowFrameTimeTip>RimWorld's smoothed total frame time, also used for FPS. This includes frame limiting and waiting; it is not CPU-only work time.</AT_ShowFrameTimeTip>
   <AT_ShowTickTime>Show milliseconds per tick</AT_ShowTickTime>
@@ -29,17 +29,17 @@
   <AT_HidePausedTip>Hide both counters during manual or forced pause. Otherwise FPS stays live and TPS displays 0 (0).</AT_HidePausedTip>
   <AT_SuppressVanilla>Avoid duplicate vanilla debug counters</AT_SuppressVanilla>
   <AT_SuppressVanillaTip>Skip the equivalent vanilla FPS/TPS debug row only while this mod actually shows that metric. Does not change debug preferences or hide other mods' counters.</AT_SuppressVanillaTip>
-  <AT_SamplingInfo>Configure normal refresh intervals. Speed changes, pause, and resume refresh TPS immediately regardless of this interval.</AT_SamplingInfo>
+  <AT_SamplingInfo>Configure normal display refresh intervals. Real tick counts are observed continuously. Speed changes and resume update from the next frame without waiting for a full interval.</AT_SamplingInfo>
   <AT_FpsInterval>FPS refresh interval (seconds)</AT_FpsInterval>
   <AT_FpsIntervalTip>How often to read the game's existing FPS statistics and refresh display text. Range: 0.1–5 seconds.</AT_FpsIntervalTip>
   <AT_TpsInterval>TPS refresh interval (seconds)</AT_TpsInterval>
-  <AT_TpsIntervalTip>Regular TPS refresh interval. Speed changes, pause, and resume bypass it immediately.</AT_TpsIntervalTip>
+  <AT_TpsIntervalTip>Regular display refresh interval. The first measurable frame after speed changes or resume updates immediately; normal refresh applies once the short window stabilizes.</AT_TpsIntervalTip>
   <AT_Decimals>Decimal places</AT_Decimals>
   <AT_DecimalsTip>Display zero, one, or two decimal places for FPS and TPS. Timing details always use two decimals.</AT_DecimalsTip>
   <AT_MethodHeading>What is measured</AT_MethodHeading>
-  <AT_MethodInfo>FPS uses native frame timing. TPS = min(1000 / average tick execution time in ms, current target TPS), matching the native counter. This estimates processing speed rather than counting completed ticks across a wall-clock window.</AT_MethodInfo>
+  <AT_MethodInfo>FPS uses native frame timing. Actual TPS = the difference between observed tick counters / real elapsed seconds between observations, smoothed with a short rolling window. Parentheses show the target; the target never determines actual TPS. Tick execution cost is an independent optional metric.</AT_MethodInfo>
   <AT_PauseHeading>Pauses, speed changes &amp; loading</AT_PauseHeading>
-  <AT_PauseInfo>Pause displays 0 (0). Changing speed or resuming immediately refreshes TPS using the new target and current tick execution time.</AT_PauseInfo>
+  <AT_PauseInfo>Pause displays 0 (0). Speed changes immediately update the target and reset the observation baseline; the next frame updates actual TPS from real tick progress.</AT_PauseInfo>
   <AT_Horizontal>Put FPS and TPS on one row</AT_Horizontal>
   <AT_HorizontalTip>Use two right-aligned columns on a single native row. Enable automatic width when displaying timing details.</AT_HorizontalTip>
   <AT_TpsFirst>Display TPS before FPS</AT_TpsFirst>
@@ -74,9 +74,9 @@
   <AT_WarningTpsRatio>Warning TPS percentage</AT_WarningTpsRatio>
   <AT_WarningTpsRatioTip>A lower target percentage uses the critical color. Cannot exceed the healthy percentage.</AT_WarningTpsRatioTip>
   <AT_HelpMeaning>Reading the counters</AT_HelpMeaning>
-  <AT_HelpMeaningText>FPS describes visual smoothness; TPS describes simulation processing speed. Parentheses show the current target, for example TPS: 180 (180). These settings do not change game speed.</AT_HelpMeaningText>
+  <AT_HelpMeaningText>FPS is rendered frames per second. TPS is measured tick progress per real second. Parentheses show the target: TPS: 300 (900) means 300 measured against a target of 900. These settings do not change game speed.</AT_HelpMeaningText>
   <AT_HelpPerformance>Low-overhead design</AT_HelpPerformance>
-  <AT_HelpPerformanceText>Reuses native timing and caches text and width. Patches native UI drawing only, without changing tick or Update loops. Disabled metrics skip their reads.</AT_HelpPerformanceText>
+  <AT_HelpPerformanceText>Observes real tick counters at most once per repaint frame, with fixed-size rolling history and cached text and width. Patches native UI only, never each simulation tick.</AT_HelpPerformanceText>
   <AT_HelpCompatibility>Compatibility &amp; saves</AT_HelpCompatibility>
   <AT_HelpCompatibilityText>For RimWorld 1.7. Requires Harmony. Counters are placed below the date and above the time buttons, with height reserved by the native controls and native fonts.</AT_HelpCompatibilityText>
   <AT_HelpPresets>Presets &amp; saving</AT_HelpPresets>

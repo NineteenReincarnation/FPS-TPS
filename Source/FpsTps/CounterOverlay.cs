@@ -21,6 +21,8 @@ internal static class CounterOverlay
     private static double frameTime;
     private static double tickTime;
     private static float target;
+    private static double nextTargetTime;
+    private static int previousSpeed;
     private static bool paused;
     private static int lastFrame = -1;
     private static int measuredFpsRevision = -1;
@@ -34,6 +36,7 @@ internal static class CounterOverlay
         readout = default;
         manager = null;
         nextFpsTime = 0;
+        nextTargetTime = 0;
         lastFrame = -1;
         measuredFpsRevision = measuredTpsRevision = -1;
     }
@@ -134,6 +137,7 @@ internal static class CounterOverlay
             manager = new System.WeakReference<TickManager>(current);
             readout = default;
             nextFpsTime = 0;
+            nextTargetTime = 0;
         }
         double now = Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
         if (s.ShowFps && now >= nextFpsTime)
@@ -146,17 +150,22 @@ internal static class CounterOverlay
         }
         if (s.ShowTps)
         {
+            bool wasPaused = paused;
             paused = current.Paused;
             int speed = (int)current.CurTimeSpeed;
-            if (readout.NeedsRefresh(now, speed, paused))
+            if (now >= nextTargetTime || speed != previousSpeed || paused != wasPaused)
             {
                 // Only read the multiplier when due or on a speed/pause change.
                 target = paused ? 0 : Math.Max(0, current.TickRateMultiplier * 60f);
-                tickTime = paused ? 0 : current.MeanTickTime;
-                readout.Update(now, speed, paused, target, tickTime, s.TpsInterval);
+                nextTargetTime = now + s.TpsInterval;
+                previousSpeed = speed;
+            }
+            if (readout.Advance(now, current.TicksGame, speed, paused, target, s.TpsInterval))
+            {
+                tickTime = paused || !s.ShowTickTime ? 0 : current.MeanTickTime;
                 MetricParts parts = (s.ShowTarget ? MetricParts.Target : 0)
                     | (s.ShowPercent ? MetricParts.Percent : 0) | (s.ShowTickTime ? MetricParts.Cost : 0);
-                TpsText.Update(false, readout.Value, readout.Target, readout.TickTime, s.Decimals, parts, paused);
+                TpsText.Update(false, readout.Value, readout.Target, tickTime, s.Decimals, parts, paused);
             }
         }
     }
