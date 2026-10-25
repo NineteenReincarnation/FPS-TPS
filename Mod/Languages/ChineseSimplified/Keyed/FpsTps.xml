@@ -10,7 +10,7 @@
   <AT_Metrics>显示指标</AT_Metrics>
   <AT_Visibility>显示条件与兼容</AT_Visibility>
   <AT_Enabled>启用计数器</AT_Enabled>
-  <AT_EnabledTip>在右下角原生 UI 区域显示计数器，修改立即生效。</AT_EnabledTip>
+  <AT_EnabledTip>在右下角原生时间控制栏显示计数器，修改立即生效。</AT_EnabledTip>
   <AT_ShowFps>显示 FPS</AT_ShowFps>
   <AT_ShowFpsTip>每秒渲染帧数，复用游戏已有的平滑帧时间统计。</AT_ShowFpsTip>
   <AT_ShowTps>显示 TPS</AT_ShowTps>
@@ -51,11 +51,11 @@
   <AT_Width>面板最小宽度（UI 单位）</AT_Width>
   <AT_WidthTip>关闭自动扩展后作为固定宽度。宽度过小时，详细指标可能被裁剪。</AT_WidthTip>
   <AT_RowHeight>行高（UI 单位）</AT_RowHeight>
-  <AT_RowHeightTip>每行显示高度，默认 26 与原版一致。</AT_RowHeightTip>
+  <AT_RowHeightTip>每行在原生布局中预留的高度，默认 26 与原版一致。</AT_RowHeightTip>
   <AT_RightInset>右侧额外留白（UI 单位）</AT_RightInset>
   <AT_RightInsetTip>使文字向左移动，不与日期或时间按钮重叠。默认 0 与原版右侧对齐。</AT_RightInsetTip>
   <AT_Gap>计数器下方间距（UI 单位）</AT_Gap>
-  <AT_GapTip>计数区域与下方原生 UI 之间的间距。</AT_GapTip>
+  <AT_GapTip>计数区域与时间控制按钮之间的间距，会在原生布局中预留空间。</AT_GapTip>
   <AT_BackgroundAlpha>背景不透明度</AT_BackgroundAlpha>
   <AT_BackgroundAlphaTip>可选纯黑背景。0 使用原生透明外观，并省去额外绘制。</AT_BackgroundAlphaTip>
   <AT_ColorHeading>颜色与性能阈值</AT_ColorHeading>
@@ -76,9 +76,9 @@
   <AT_HelpMeaning>如何理解数值</AT_HelpMeaning>
   <AT_HelpMeaningText>FPS 表示画面流畅度，TPS 表示游戏模拟处理速度；括号内为当前目标，例如 TPS: 180 (180)。这里的设置不修改游戏速度。</AT_HelpMeaningText>
   <AT_HelpPerformance>低开销设计</AT_HelpPerformance>
-  <AT_HelpPerformanceText>复用游戏已有统计并缓存文字与宽度。使用游戏原生组件与 GUI 扩展，无运行时补丁。关闭指标即停止对应读取。</AT_HelpPerformanceText>
+  <AT_HelpPerformanceText>复用游戏已有统计并缓存文字与宽度。只修改原生 UI 绘制，不修改 tick 或 Update 循环。关闭指标即停止对应读取。</AT_HelpPerformanceText>
   <AT_HelpCompatibility>兼容与存档</AT_HelpCompatibility>
-  <AT_HelpCompatibilityText>仅需 RimWorld 1.7，无需前置 Mod 或 DLC。指标在右下角原生 UI 区域显示，按游戏已完成布局的边界避开日期、天气和信件；使用游戏原生字体。组件没有持久化计数数据。</AT_HelpCompatibilityText>
+  <AT_HelpCompatibilityText>适用于 RimWorld 1.7，需要 Harmony。指标位于日期下方、时间按钮上方，由原生控制栏预留高度，使用游戏原生字体。</AT_HelpCompatibilityText>
   <AT_HelpPresets>预设与保存</AT_HelpPresets>
   <AT_HelpPresetsText>“恢复默认”会重置全部设置。“简洁预设”使用 FPS 1 秒、TPS 2 秒间隔，关闭耗时、百分比、颜色及背景。“详细预设”开启两种指标、目标、百分比及耗时，间隔为 0.5 秒 / 1 秒。两种预设保留布局和显示条件偏好。修改立即生效，关闭 Mod 设置时保存。</AT_HelpPresetsText>
 </LanguageData>

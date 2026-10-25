@@ -31,7 +31,6 @@ internal static class CounterOverlay
 
     internal static void Reset()
     {
-        NativeCounterVisibility.Restore();
         readout = default;
         manager = null;
         nextFpsTime = 0;
@@ -45,9 +44,11 @@ internal static class CounterOverlay
         && (!s.HidePaused || !Find.TickManager.Paused)
         && Find.UIRoot is { } root && !root.screenshotMode.FiltersCurrentEvent;
 
-    internal static bool IsVisible => Visible(FpsTpsMod.Settings);
-    internal static float Height => (FpsTpsMod.Settings.Horizontal
-        || !(FpsTpsMod.Settings.ShowFps && FpsTpsMod.Settings.ShowTps) ? 1 : 2) * FpsTpsMod.Settings.RowHeight;
+    internal static bool ReplacesVanilla(bool fpsCounter)
+    {
+        FpsTpsSettings s = FpsTpsMod.Settings;
+        return s.SuppressVanilla && (fpsCounter ? s.ShowFps : s.ShowTps) && Visible(s);
+    }
 
     internal static void Draw(float leftX, float nativeWidth, ref float baseY)
     {

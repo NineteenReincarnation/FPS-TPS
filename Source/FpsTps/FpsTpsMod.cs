@@ -1,3 +1,5 @@
+using HarmonyLib;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -12,7 +14,8 @@ public sealed class FpsTpsMod : Mod
     {
         Settings = GetSettings<FpsTpsSettings>();
         Settings.Sanitize();
-        Log.Message("[FPS & TPS] anno.fpsandtps 1.1.0 loaded. No prerequisite mods or runtime patches.");
+        new Harmony("anno.fpsandtps").PatchAll(typeof(FpsTpsMod).Assembly);
+        Log.Message("[FPS & TPS] anno.fpsandtps 1.1.1 loaded.");
     }
 
     public override string SettingsCategory() => "FPS & TPS";
@@ -23,4 +26,27 @@ public sealed class FpsTpsMod : Mod
         base.WriteSettings();
         CounterOverlay.Reset();
     }
+}
+
+[HarmonyPatch(typeof(GlobalControlsUtility), nameof(GlobalControlsUtility.DoTimespeedControls))]
+internal static class NativeControlsPatch
+{
+    [HarmonyPostfix]
+    [HarmonyPriority(Priority.Last)]
+    private static void Postfix(float leftX, float width, ref float curBaseY) =>
+        CounterOverlay.Draw(leftX, width, ref curBaseY);
+}
+
+[HarmonyPatch(typeof(GlobalControlsUtility), nameof(GlobalControlsUtility.DrawFpsCounter))]
+internal static class VanillaFpsPatch
+{
+    [HarmonyPrefix]
+    private static bool Prefix() => !CounterOverlay.ReplacesVanilla(true);
+}
+
+[HarmonyPatch(typeof(GlobalControlsUtility), nameof(GlobalControlsUtility.DrawTpsCounter))]
+internal static class VanillaTpsPatch
+{
+    [HarmonyPrefix]
+    private static bool Prefix() => !CounterOverlay.ReplacesVanilla(false);
 }

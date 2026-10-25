@@ -10,7 +10,7 @@
   <AT_Metrics>Visible metrics</AT_Metrics>
   <AT_Visibility>Visibility &amp; compatibility</AT_Visibility>
   <AT_Enabled>Enable counters</AT_Enabled>
-  <AT_EnabledTip>Display counters in the native bottom-right UI area. Takes effect immediately.</AT_EnabledTip>
+  <AT_EnabledTip>Display counters in the native bottom-right time controls. Takes effect immediately.</AT_EnabledTip>
   <AT_ShowFps>Show FPS</AT_ShowFps>
   <AT_ShowFpsTip>Rendered frames per second, using RimWorld's existing smoothed frame timing.</AT_ShowFpsTip>
   <AT_ShowTps>Show TPS</AT_ShowTps>
@@ -51,11 +51,11 @@
   <AT_Width>Minimum panel width (UI units)</AT_Width>
   <AT_WidthTip>Used as a fixed width when automatic fitting is disabled. Very narrow widths can clip detailed values.</AT_WidthTip>
   <AT_RowHeight>Row height (UI units)</AT_RowHeight>
-  <AT_RowHeightTip>Height of each display row. The default of 26 matches vanilla.</AT_RowHeightTip>
+  <AT_RowHeightTip>Height reserved for each row in the native layout. The default of 26 matches vanilla.</AT_RowHeightTip>
   <AT_RightInset>Extra right inset (UI units)</AT_RightInset>
   <AT_RightInsetTip>Move the text left without overlapping the date or time buttons. Default zero matches vanilla alignment.</AT_RightInsetTip>
   <AT_Gap>Gap below counters (UI units)</AT_Gap>
-  <AT_GapTip>Spacing between the counter block and the native UI below it.</AT_GapTip>
+  <AT_GapTip>Extra spacing between metrics and time controls, reserved in the native layout.</AT_GapTip>
   <AT_BackgroundAlpha>Background opacity</AT_BackgroundAlpha>
   <AT_BackgroundAlphaTip>Optional plain black background. Zero uses the native transparent appearance and skips the extra draw call.</AT_BackgroundAlphaTip>
   <AT_ColorHeading>Colors &amp; performance thresholds</AT_ColorHeading>
@@ -76,9 +76,9 @@
   <AT_HelpMeaning>Reading the counters</AT_HelpMeaning>
   <AT_HelpMeaningText>FPS describes visual smoothness; TPS describes simulation processing speed. Parentheses show the current target, for example TPS: 180 (180). These settings do not change game speed.</AT_HelpMeaningText>
   <AT_HelpPerformance>Low-overhead design</AT_HelpPerformance>
-  <AT_HelpPerformanceText>Reuses native timing and caches text and width. Uses official game components and GUI extensions, with no runtime patches. Disabled metrics skip their reads.</AT_HelpPerformanceText>
+  <AT_HelpPerformanceText>Reuses native timing and caches text and width. Patches native UI drawing only, without changing tick or Update loops. Disabled metrics skip their reads.</AT_HelpPerformanceText>
   <AT_HelpCompatibility>Compatibility &amp; saves</AT_HelpCompatibility>
-  <AT_HelpCompatibilityText>Requires RimWorld 1.7 only. No prerequisite mods or DLC. Counters follow the completed native bottom-right layout to avoid date, weather, and letters, using native fonts. The component stores no persistent counter data.</AT_HelpCompatibilityText>
+  <AT_HelpCompatibilityText>For RimWorld 1.7. Requires Harmony. Counters are placed below the date and above the time buttons, with height reserved by the native controls and native fonts.</AT_HelpCompatibilityText>
   <AT_HelpPresets>Presets &amp; saving</AT_HelpPresets>
   <AT_HelpPresetsText>Defaults restores every setting. Low overhead uses 1 s FPS and 2 s TPS refresh, with no timing details, percentages, colors or background. Detailed enables both counters, target, percentage and timing details at 0.5 s / 1 s. Layout and visibility preferences are preserved by these two presets. Changes apply immediately and are saved when closing Mod settings.</AT_HelpPresetsText>
 </LanguageData>
