@@ -1,4 +1,4 @@
-FPS & TPS 1.2.2
+FPS & TPS 1.3.2
 
 提供 FPS 和 TPS 显示。
 Displays FPS and TPS.

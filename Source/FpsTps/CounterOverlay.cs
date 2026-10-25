@@ -1,6 +1,4 @@
 using System.Diagnostics;
-using RimWorld;
-using RimWorld.Planet;
 using UnityEngine;
 using Verse;
 
@@ -8,26 +6,21 @@ namespace Anno.FpsTps;
 
 internal static class CounterOverlay
 {
+    private const float RowHeight = 26f;
+    private const double FpsInterval = 0.5;
+    private const double TpsInterval = 1;
     private static readonly MetricText FpsText = new();
     private static readonly MetricText TpsText = new();
-    private static readonly Color[] Healthy = [new(0.55f, 1f, 0.55f), new(0.35f, 0.8f, 1f), Color.white];
-    private static readonly Color[] Warning = [new(1f, 0.85f, 0.35f), new(1f, 0.8f, 0.3f), new(1f, 0.85f, 0.35f)];
-    private static readonly Color[] Critical = [new(1f, 0.4f, 0.4f), new(1f, 0.5f, 0.2f), new(1f, 0.45f, 0.55f)];
     private static TpsReadout readout;
-    // Do not keep a closed colony's tick lists (and their Things) alive from a static UI cache.
     private static System.WeakReference<TickManager>? manager;
     private static double nextFpsTime;
-    private static double fps;
-    private static double frameTime;
-    private static double tickTime;
-    private static float target;
     private static double nextTargetTime;
     private static int previousSpeed;
     private static bool paused;
+    private static float target;
     private static int lastFrame = -1;
     private static int measuredFpsRevision = -1;
     private static int measuredTpsRevision = -1;
-    private static GameFont measuredFont;
     private static float fpsWidth;
     private static float tpsWidth;
 
@@ -35,90 +28,72 @@ internal static class CounterOverlay
     {
         readout = default;
         manager = null;
-        nextFpsTime = 0;
-        nextTargetTime = 0;
+        nextFpsTime = nextTargetTime = 0;
         lastFrame = -1;
         measuredFpsRevision = measuredTpsRevision = -1;
     }
 
-    private static bool Visible(FpsTpsSettings s) => s.Enabled && (s.ShowFps || s.ShowTps)
+    private static bool Visible(FpsTpsSettings settings) => (settings.ShowFps || settings.ShowTps)
         && Current.ProgramState == ProgramState.Playing
-        && (s.ShowWorld || !WorldRendererUtility.WorldSelected)
-        && (!s.HidePaused || !Find.TickManager.Paused)
         && Find.UIRoot is { } root && !root.screenshotMode.FiltersCurrentEvent;
 
     internal static bool ReplacesVanilla(bool fpsCounter)
     {
-        FpsTpsSettings s = FpsTpsMod.Settings;
-        return s.SuppressVanilla && (fpsCounter ? s.ShowFps : s.ShowTps) && Visible(s);
+        FpsTpsSettings settings = FpsTpsMod.Settings;
+        return (fpsCounter ? settings.ShowFps : settings.ShowTps) && Visible(settings);
     }
 
     internal static void Draw(float leftX, float nativeWidth, ref float baseY)
     {
-        FpsTpsSettings s = FpsTpsMod.Settings;
-        if (!Visible(s))
+        FpsTpsSettings settings = FpsTpsMod.Settings;
+        if (!Visible(settings))
         {
             if (manager is not null)
                 Reset();
             return;
         }
-
-        int rows = s.Horizontal || !(s.ShowFps && s.ShowTps) ? 1 : 2;
-        float height = rows * s.RowHeight;
-        float bottom = baseY - s.Gap;
-        baseY -= height + s.Gap;
-        // Reserve exactly the same space on input events; draw and sample only on repaint.
+        int rows = (settings.ShowFps ? 1 : 0) + (settings.ShowTps ? 1 : 0);
+        float top = baseY - rows * RowHeight;
+        baseY = top;
         if (Event.current.type != EventType.repaint)
             return;
-
         if (lastFrame != RealTime.frameCount)
         {
             lastFrame = RealTime.frameCount;
-            Refresh(s);
+            Refresh(settings);
         }
+
         GameFont oldFont = Text.Font;
         TextAnchor oldAnchor = Text.Anchor;
         Color oldColor = GUI.color;
         bool oldWrap = Text.WordWrap;
         try
         {
-            Text.Font = s.TinyFont ? GameFont.Tiny : GameFont.Small;
+            Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.MiddleRight;
             Text.WordWrap = false;
-            Measure();
-            float required = s.Horizontal && s.ShowFps && s.ShowTps
-                ? fpsWidth + tpsWidth + 20f : Math.Max(s.ShowFps ? fpsWidth : 0, s.ShowTps ? tpsWidth : 0);
-            float right = leftX + nativeWidth - 7f - s.RightInset;
-            float panelWidth = s.AutoWidth ? Math.Max(s.Width, required + 8f) : s.Width;
-            panelWidth = Math.Min(panelWidth, Math.Max(1f, right - 4f));
-            Rect bounds = new(right - panelWidth, bottom - height, panelWidth, height);
-            if (s.BackgroundAlpha > 0)
-                Widgets.DrawBoxSolid(bounds, new Color(0f, 0f, 0f, s.BackgroundAlpha));
-
-            if (s.ShowFps && s.ShowTps && s.Horizontal)
+            GUI.color = Color.white;
+            if (settings.ShowFps && measuredFpsRevision != FpsText.Revision)
             {
-                // Scale the two columns when automatic width is disabled.
-                float firstWidth = s.TpsFirst ? tpsWidth : fpsWidth;
-                float secondWidth = s.TpsFirst ? fpsWidth : tpsWidth;
-                float secondShare = (secondWidth + 4f) / (firstWidth + secondWidth + 8f);
-                float split = bounds.width * secondShare;
-                Rect first = new(bounds.x, bounds.y, bounds.width - split - 12f, bounds.height);
-                Rect second = new(bounds.xMax - split, bounds.y, split, bounds.height);
-                DrawMetric(first, !s.TpsFirst, s);
-                DrawMetric(second, s.TpsFirst, s);
+                fpsWidth = Text.CalcSize(FpsText.Text).x;
+                measuredFpsRevision = FpsText.Revision;
             }
-            else
+            if (settings.ShowTps && measuredTpsRevision != TpsText.Revision)
             {
-                Rect row = new(bounds.x, bounds.y, bounds.width, s.RowHeight);
-                if (s.ShowFps && s.ShowTps)
-                {
-                    DrawMetric(row, !s.TpsFirst, s);
-                    row.y += s.RowHeight;
-                    DrawMetric(row, s.TpsFirst, s);
-                }
-                else
-                    DrawMetric(row, s.ShowFps, s);
+                tpsWidth = Text.CalcSize(TpsText.Text).x;
+                measuredTpsRevision = TpsText.Revision;
             }
+            float textWidth = Math.Max(settings.ShowFps ? fpsWidth : 0, settings.ShowTps ? tpsWidth : 0);
+            float right = leftX + nativeWidth - 7f;
+            float width = Math.Min(Math.Max(nativeWidth - 7f, textWidth + 8f), Math.Max(1, right - 4f));
+            Rect row = new(right - width, top, width, RowHeight);
+            if (settings.ShowFps)
+            {
+                Widgets.Label(row, FpsText.Text);
+                row.y += RowHeight;
+            }
+            if (settings.ShowTps)
+                Widgets.Label(row, TpsText.Text);
         }
         finally
         {
@@ -129,77 +104,35 @@ internal static class CounterOverlay
         }
     }
 
-    private static void Refresh(FpsTpsSettings s)
+    private static void Refresh(FpsTpsSettings settings)
     {
         TickManager current = Find.TickManager;
         if (manager is null || !manager.TryGetTarget(out TickManager? previous) || !ReferenceEquals(previous, current))
         {
             manager = new System.WeakReference<TickManager>(current);
             readout = default;
-            nextFpsTime = 0;
-            nextTargetTime = 0;
+            nextFpsTime = nextTargetTime = 0;
         }
         double now = Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
-        if (s.ShowFps && now >= nextFpsTime)
+        if (settings.ShowFps && now >= nextFpsTime)
         {
-            frameTime = Root.AverageFrameTime;
-            fps = frameTime > 0 && double.IsFinite(frameTime) ? 1000d / frameTime : 0;
-            FpsText.Update(true, fps, 0, frameTime, s.Decimals,
-                s.ShowFrameTime ? MetricParts.Cost : MetricParts.None);
-            nextFpsTime = now + s.FpsInterval;
+            double frameTime = Root.AverageFrameTime;
+            FpsText.Update(true, frameTime > 0 && double.IsFinite(frameTime) ? 1000 / frameTime : 0);
+            nextFpsTime = now + FpsInterval;
         }
-        if (s.ShowTps)
+        if (settings.ShowTps)
         {
             bool wasPaused = paused;
             paused = current.Paused;
             int speed = (int)current.CurTimeSpeed;
             if (now >= nextTargetTime || speed != previousSpeed || paused != wasPaused)
             {
-                // Only read the multiplier when due or on a speed/pause change.
                 target = paused ? 0 : Math.Max(0, current.TickRateMultiplier * 60f);
-                nextTargetTime = now + s.TpsInterval;
+                nextTargetTime = now + TpsInterval;
                 previousSpeed = speed;
             }
-            if (readout.Advance(now, current.TicksGame, speed, paused, target, s.TpsInterval))
-            {
-                tickTime = paused || !s.ShowTickTime ? 0 : current.MeanTickTime;
-                MetricParts parts = (s.ShowTarget ? MetricParts.Target : 0)
-                    | (s.ShowPercent ? MetricParts.Percent : 0) | (s.ShowTickTime ? MetricParts.Cost : 0);
-                TpsText.Update(false, readout.Value, readout.Target, tickTime, s.Decimals, parts, paused);
-            }
+            if (readout.Advance(now, current.TicksGame, speed, paused, target, TpsInterval))
+                TpsText.Update(false, readout.Value, readout.Target);
         }
-    }
-
-    private static void Measure()
-    {
-        if (measuredFont != Text.Font)
-        {
-            measuredFont = Text.Font;
-            measuredFpsRevision = measuredTpsRevision = -1;
-        }
-        if (measuredFpsRevision != FpsText.Revision)
-        {
-            fpsWidth = Text.CalcSize(FpsText.Text).x;
-            measuredFpsRevision = FpsText.Revision;
-        }
-        if (measuredTpsRevision != TpsText.Revision)
-        {
-            tpsWidth = Text.CalcSize(TpsText.Text).x;
-            measuredTpsRevision = TpsText.Revision;
-        }
-    }
-
-    private static void DrawMetric(Rect rect, bool isFps, FpsTpsSettings s)
-    {
-        Color color = Color.white;
-        if (s.Colorize && (isFps || !paused))
-        {
-            double value = isFps ? fps : target > 0 ? readout.Value / target : 0;
-            double good = isFps ? s.GoodFps : s.GoodTpsRatio;
-            double warn = isFps ? s.WarningFps : s.WarningTpsRatio;
-            color = value >= good ? Healthy[s.Palette] : value >= warn ? Warning[s.Palette] : Critical[s.Palette];
-        }
-        GUI.color = color;
-        Widgets.Label(rect, isFps ? FpsText.Text : TpsText.Text);
     }
 }
