@@ -1,10 +1,24 @@
+# Publish only the Mod, its source/project, and essential repository files.
+/*
+!/.gitignore
+!/.gitattributes
+!/FPS-TPS.sln
+!/LICENSE
+!/README.md
+!/README.en.md
+!/Source/
+!/Source/**
+!/Mod/
+!/Mod/**
+
+# Local build products and tools must remain local.
 **/bin/
 **/obj/
-.vs/
-.idea/
+**/Tests/
+**/docs/
+**/.github/
+*.ps1
 *.user
 *.suo
-artifacts/
-.test-data/
-Mod/About/PublishedFileId.txt
 *.log
+Mod/About/PublishedFileId.txt
