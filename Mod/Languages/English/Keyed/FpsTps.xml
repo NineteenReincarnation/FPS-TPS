@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <AT_Display>Display</AT_Display>
-  <AT_Sampling>Sampling</AT_Sampling>
+  <AT_Sampling>Refresh</AT_Sampling>
   <AT_Appearance>Appearance</AT_Appearance>
   <AT_Help>Help &amp; performance</AT_Help>
   <AT_Defaults>Restore defaults</AT_Defaults>
@@ -10,36 +10,36 @@
   <AT_Metrics>Visible metrics</AT_Metrics>
   <AT_Visibility>Visibility &amp; compatibility</AT_Visibility>
   <AT_Enabled>Enable counters</AT_Enabled>
-  <AT_EnabledTip>Display counters in the native bottom-right control stack. Takes effect immediately.</AT_EnabledTip>
+  <AT_EnabledTip>Display counters in the native bottom-right UI area. Takes effect immediately.</AT_EnabledTip>
   <AT_ShowFps>Show FPS</AT_ShowFps>
   <AT_ShowFpsTip>Rendered frames per second, using RimWorld's existing smoothed frame timing.</AT_ShowFpsTip>
-  <AT_ShowTps>Show actual TPS</AT_ShowTps>
-  <AT_ShowTpsTip>Completed simulation ticks per real second, measured over the sampling window.</AT_ShowTpsTip>
+  <AT_ShowTps>Show TPS</AT_ShowTps>
+  <AT_ShowTpsTip>Uses the same tick-processing-time calculation as the native TPS counter. No sampling-window wait.</AT_ShowTpsTip>
   <AT_ShowTarget>Show target TPS in parentheses</AT_ShowTarget>
   <AT_ShowTargetTip>Read the current tick rate multiplier from the game; supports mods that patch this multiplier. Forced slowdown and idle speed changes update at the TPS interval.</AT_ShowTargetTip>
   <AT_ShowPercent>Show TPS target percentage</AT_ShowPercent>
-  <AT_ShowPercentTip>Actual TPS divided by target TPS. Short windows and catch-up ticks can briefly exceed 100%.</AT_ShowPercentTip>
+  <AT_ShowPercentTip>TPS divided by the current target TPS.</AT_ShowPercentTip>
   <AT_ShowFrameTime>Show milliseconds per frame</AT_ShowFrameTime>
   <AT_ShowFrameTimeTip>RimWorld's smoothed total frame time, also used for FPS. This includes frame limiting and waiting; it is not CPU-only work time.</AT_ShowFrameTimeTip>
   <AT_ShowTickTime>Show milliseconds per tick</AT_ShowTickTime>
-  <AT_ShowTickTimeTip>RimWorld's existing smoothed tick execution time. Unlike actual TPS, it excludes most waiting between ticks.</AT_ShowTickTimeTip>
+  <AT_ShowTickTimeTip>RimWorld's existing smoothed tick execution time.</AT_ShowTickTimeTip>
   <AT_ShowWorld>Show on the world map</AT_ShowWorld>
-  <AT_ShowWorldTip>Use the same native controls hook in colony and world view. The main menu never displays counters.</AT_ShowWorldTip>
+  <AT_ShowWorldTip>Use the native GUI display in both colony and world view. The main menu shows no counters.</AT_ShowWorldTip>
   <AT_HidePaused>Hide all counters while paused</AT_HidePaused>
   <AT_HidePausedTip>Hide both counters during manual or forced pause. Otherwise FPS stays live and TPS displays 0 (0).</AT_HidePausedTip>
   <AT_SuppressVanilla>Avoid duplicate vanilla debug counters</AT_SuppressVanilla>
   <AT_SuppressVanillaTip>Skip the equivalent vanilla FPS/TPS debug row only while this mod actually shows that metric. Does not change debug preferences or hide other mods' counters.</AT_SuppressVanillaTip>
-  <AT_SamplingInfo>Longer intervals reduce formatting work and make TPS steadier. Sampling is constant-time, without per-tick patches. Recommended: FPS 0.5 s, TPS 1.0 s.</AT_SamplingInfo>
+  <AT_SamplingInfo>Configure normal refresh intervals. Speed changes, pause, and resume refresh TPS immediately regardless of this interval.</AT_SamplingInfo>
   <AT_FpsInterval>FPS refresh interval (seconds)</AT_FpsInterval>
   <AT_FpsIntervalTip>How often to read the game's existing FPS statistics and refresh display text. Range: 0.1–5 seconds.</AT_FpsIntervalTip>
-  <AT_TpsInterval>TPS sampling window (seconds)</AT_TpsInterval>
-  <AT_TpsIntervalTip>Measure completed ticks across this many real seconds. Short windows react faster but are noisier at low frame rates.</AT_TpsIntervalTip>
+  <AT_TpsInterval>TPS refresh interval (seconds)</AT_TpsInterval>
+  <AT_TpsIntervalTip>Regular TPS refresh interval. Speed changes, pause, and resume bypass it immediately.</AT_TpsIntervalTip>
   <AT_Decimals>Decimal places</AT_Decimals>
   <AT_DecimalsTip>Display zero, one, or two decimal places for FPS and TPS. Timing details always use two decimals.</AT_DecimalsTip>
   <AT_MethodHeading>What is measured</AT_MethodHeading>
-  <AT_MethodInfo>FPS = 1000 / the game's smoothed frame time in milliseconds. TPS = completed tick difference / elapsed wall-clock seconds. Target TPS = current game tick rate multiplier × 60. Tick cost is read from the game's existing average. Actual TPS is not a theoretical speed estimated from tick cost.</AT_MethodInfo>
+  <AT_MethodInfo>FPS uses native frame timing. TPS = min(1000 / average tick execution time in ms, current target TPS), matching the native counter. This estimates processing speed rather than counting completed ticks across a wall-clock window.</AT_MethodInfo>
   <AT_PauseHeading>Pauses, speed changes &amp; loading</AT_PauseHeading>
-  <AT_PauseInfo>Paused TPS displays 0 (0). Speed changes keep the last measured value until the next sample. Resume, loading, or a long hidden period starts a fresh sample.</AT_PauseInfo>
+  <AT_PauseInfo>Pause displays 0 (0). Changing speed or resuming immediately refreshes TPS using the new target and current tick execution time.</AT_PauseInfo>
   <AT_Horizontal>Put FPS and TPS on one row</AT_Horizontal>
   <AT_HorizontalTip>Use two right-aligned columns on a single native row. Enable automatic width when displaying timing details.</AT_HorizontalTip>
   <AT_TpsFirst>Display TPS before FPS</AT_TpsFirst>
@@ -51,16 +51,16 @@
   <AT_Width>Minimum panel width (UI units)</AT_Width>
   <AT_WidthTip>Used as a fixed width when automatic fitting is disabled. Very narrow widths can clip detailed values.</AT_WidthTip>
   <AT_RowHeight>Row height (UI units)</AT_RowHeight>
-  <AT_RowHeightTip>Each row reserves this height in the original controls stack. Default 26 matches vanilla.</AT_RowHeightTip>
+  <AT_RowHeightTip>Height of each display row. The default of 26 matches vanilla.</AT_RowHeightTip>
   <AT_RightInset>Extra right inset (UI units)</AT_RightInset>
   <AT_RightInsetTip>Move the text left without overlapping the date or time buttons. Default zero matches vanilla alignment.</AT_RightInsetTip>
   <AT_Gap>Gap below counters (UI units)</AT_Gap>
-  <AT_GapTip>Extra space between the counter block and time controls. This space is reserved in the stack.</AT_GapTip>
+  <AT_GapTip>Spacing between the counter block and the native UI below it.</AT_GapTip>
   <AT_BackgroundAlpha>Background opacity</AT_BackgroundAlpha>
   <AT_BackgroundAlphaTip>Optional plain black background. Zero uses the native transparent appearance and skips the extra draw call.</AT_BackgroundAlphaTip>
   <AT_ColorHeading>Colors &amp; performance thresholds</AT_ColorHeading>
   <AT_Colorize>Color values by performance</AT_Colorize>
-  <AT_ColorizeTip>Use healthy, warning, and critical colors at the thresholds below. Paused or resampling TPS uses the default color.</AT_ColorizeTip>
+  <AT_ColorizeTip>Use healthy, warning, and critical colors at the thresholds below. Paused TPS uses the default color.</AT_ColorizeTip>
   <AT_Palette>Color palette (click to cycle)</AT_Palette>
   <AT_Palette0>Green / yellow / red</AT_Palette0>
   <AT_Palette1>Blue / yellow / orange</AT_Palette1>
@@ -70,15 +70,15 @@
   <AT_WarningFps>Warning FPS threshold</AT_WarningFps>
   <AT_WarningFpsTip>FPS below this value uses the critical color. Values between this and the healthy threshold use warning color.</AT_WarningFpsTip>
   <AT_GoodTpsRatio>Healthy TPS percentage</AT_GoodTpsRatio>
-  <AT_GoodTpsRatioTip>Compare actual TPS to the game's current target rather than a fixed target of 60.</AT_GoodTpsRatioTip>
+  <AT_GoodTpsRatioTip>Compare TPS to the current target instead of using a fixed target of 60 for every speed.</AT_GoodTpsRatioTip>
   <AT_WarningTpsRatio>Warning TPS percentage</AT_WarningTpsRatio>
   <AT_WarningTpsRatioTip>A lower target percentage uses the critical color. Cannot exceed the healthy percentage.</AT_WarningTpsRatioTip>
   <AT_HelpMeaning>Reading the counters</AT_HelpMeaning>
-  <AT_HelpMeaningText>FPS describes visual smoothness; TPS describes simulation progress. A high FPS does not guarantee high TPS. Parentheses show the current target, for example TPS: 180 (180). Brief percentages over 100% are possible with tick catch-up. No settings here accelerate simulation or change game speed.</AT_HelpMeaningText>
+  <AT_HelpMeaningText>FPS describes visual smoothness; TPS describes simulation processing speed. Parentheses show the current target, for example TPS: 180 (180). These settings do not change game speed.</AT_HelpMeaningText>
   <AT_HelpPerformance>Low-overhead design</AT_HelpPerformance>
-  <AT_HelpPerformanceText>Reuses native frame timing, samples actual TPS at configured intervals, and caches text and width. No per-tick patches. Hidden metrics skip their sampling.</AT_HelpPerformanceText>
+  <AT_HelpPerformanceText>Reuses native timing and caches text and width. Uses official game components and GUI extensions, with no runtime patches. Disabled metrics skip their reads.</AT_HelpPerformanceText>
   <AT_HelpCompatibility>Compatibility &amp; saves</AT_HelpCompatibility>
-  <AT_HelpCompatibilityText>Requires RimWorld 1.7 and Harmony 1.7. No DLC required. Counters are inserted above the native time controls and reserve space before date/weather/letters are laid out. GUI color, font, alignment and wrapping are restored after drawing. No save data is added; safe to add/remove. Other mods that replace the entire controls stack may need a compatibility patch. Disable other FPS/TPS overlays if they duplicate this display.</AT_HelpCompatibilityText>
+  <AT_HelpCompatibilityText>Requires RimWorld 1.7 only. No prerequisite mods or DLC. Counters follow the completed native bottom-right layout to avoid date, weather, and letters, using native fonts. The component stores no persistent counter data.</AT_HelpCompatibilityText>
   <AT_HelpPresets>Presets &amp; saving</AT_HelpPresets>
   <AT_HelpPresetsText>Defaults restores every setting. Low overhead uses 1 s FPS and 2 s TPS refresh, with no timing details, percentages, colors or background. Detailed enables both counters, target, percentage and timing details at 0.5 s / 1 s. Layout and visibility preferences are preserved by these two presets. Changes apply immediately and are saved when closing Mod settings.</AT_HelpPresetsText>
 </LanguageData>

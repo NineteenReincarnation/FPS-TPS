@@ -6,21 +6,11 @@
   <supportedVersions>
     <li>1.7</li>
   </supportedVersions>
-  <modVersion>1.0.1</modVersion>
+  <modVersion>1.1.0</modVersion>
   <url>https://github.com/NineteenReincarnation/FPS-TPS</url>
-  <modDependencies>
-    <li>
-      <packageId>brrainz.harmony</packageId>
-      <displayName>Harmony</displayName>
-      <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
-    </li>
-  </modDependencies>
-  <loadAfter>
-    <li>brrainz.harmony</li>
-  </loadAfter>
-  <description>在 RimWorld 1.7 右下角原生 UI 中显示 FPS 和 TPS，并提供显示设置。需要 Harmony。
+  <description>在 RimWorld 1.7 右下角原生 UI 中显示 FPS 和 TPS，并提供显示设置。无需前置 Mod。
 
-Displays FPS and TPS in RimWorld 1.7's native bottom-right UI, with configurable display settings. Requires Harmony.
+Displays FPS and TPS in RimWorld 1.7's native bottom-right UI, with configurable display settings. No prerequisite mods.
 
 MIT License.</description>
 </ModMetaData>

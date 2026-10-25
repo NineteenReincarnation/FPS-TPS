@@ -13,7 +13,7 @@ internal static class CounterOverlay
     private static readonly Color[] Healthy = [new(0.55f, 1f, 0.55f), new(0.35f, 0.8f, 1f), Color.white];
     private static readonly Color[] Warning = [new(1f, 0.85f, 0.35f), new(1f, 0.8f, 0.3f), new(1f, 0.85f, 0.35f)];
     private static readonly Color[] Critical = [new(1f, 0.4f, 0.4f), new(1f, 0.5f, 0.2f), new(1f, 0.45f, 0.55f)];
-    private static RateSampler sampler;
+    private static TpsReadout readout;
     // Do not keep a closed colony's tick lists (and their Things) alive from a static UI cache.
     private static System.WeakReference<TickManager>? manager;
     private static double nextFpsTime;
@@ -21,8 +21,6 @@ internal static class CounterOverlay
     private static double frameTime;
     private static double tickTime;
     private static float target;
-    private static double nextTargetTime;
-    private static TimeSpeed previousSpeed;
     private static bool paused;
     private static int lastFrame = -1;
     private static int measuredFpsRevision = -1;
@@ -33,10 +31,10 @@ internal static class CounterOverlay
 
     internal static void Reset()
     {
-        sampler = default;
+        NativeCounterVisibility.Restore();
+        readout = default;
         manager = null;
         nextFpsTime = 0;
-        nextTargetTime = 0;
         lastFrame = -1;
         measuredFpsRevision = measuredTpsRevision = -1;
     }
@@ -44,20 +42,18 @@ internal static class CounterOverlay
     private static bool Visible(FpsTpsSettings s) => s.Enabled && (s.ShowFps || s.ShowTps)
         && Current.ProgramState == ProgramState.Playing
         && (s.ShowWorld || !WorldRendererUtility.WorldSelected)
-        && (!s.HidePaused || !Find.TickManager.Paused);
+        && (!s.HidePaused || !Find.TickManager.Paused)
+        && Find.UIRoot is { } root && !root.screenshotMode.FiltersCurrentEvent;
 
-    internal static bool ReplacesVanilla(bool fpsCounter)
-    {
-        FpsTpsSettings s = FpsTpsMod.Settings;
-        return s.SuppressVanilla && (fpsCounter ? s.ShowFps : s.ShowTps) && Visible(s);
-    }
+    internal static bool IsVisible => Visible(FpsTpsMod.Settings);
+    internal static float Height => (FpsTpsMod.Settings.Horizontal
+        || !(FpsTpsMod.Settings.ShowFps && FpsTpsMod.Settings.ShowTps) ? 1 : 2) * FpsTpsMod.Settings.RowHeight;
 
     internal static void Draw(float leftX, float nativeWidth, ref float baseY)
     {
         FpsTpsSettings s = FpsTpsMod.Settings;
         if (!Visible(s))
         {
-            // A short pause with HidePaused enabled must not leak into the next TPS window.
             if (manager is not null)
                 Reset();
             return;
@@ -135,9 +131,8 @@ internal static class CounterOverlay
         if (manager is null || !manager.TryGetTarget(out TickManager? previous) || !ReferenceEquals(previous, current))
         {
             manager = new System.WeakReference<TickManager>(current);
-            sampler = default;
+            readout = default;
             nextFpsTime = 0;
-            nextTargetTime = 0;
         }
         double now = Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
         if (s.ShowFps && now >= nextFpsTime)
@@ -150,23 +145,17 @@ internal static class CounterOverlay
         }
         if (s.ShowTps)
         {
-            bool wasPaused = paused;
             paused = current.Paused;
-            // This getter can inspect awake colonists at 3x speed. Read it only on state changes
-            // or at the TPS interval, never on every repaint. Respect mods patching the multiplier.
-            TimeSpeed speed = current.CurTimeSpeed;
-            if (now >= nextTargetTime || speed != previousSpeed || wasPaused != paused)
+            int speed = (int)current.CurTimeSpeed;
+            if (readout.NeedsRefresh(now, speed, paused))
             {
+                // Only read the multiplier when due or on a speed/pause change.
                 target = paused ? 0 : Math.Max(0, current.TickRateMultiplier * 60f);
-                nextTargetTime = now + s.TpsInterval;
-                previousSpeed = speed;
-            }
-            if (sampler.Advance(now, current.TicksGame, paused, target, s.TpsInterval) || wasPaused != paused)
-            {
                 tickTime = paused ? 0 : current.MeanTickTime;
+                readout.Update(now, speed, paused, target, tickTime, s.TpsInterval);
                 MetricParts parts = (s.ShowTarget ? MetricParts.Target : 0)
                     | (s.ShowPercent ? MetricParts.Percent : 0) | (s.ShowTickTime ? MetricParts.Cost : 0);
-                TpsText.Update(false, sampler.Value, target, tickTime, s.Decimals, parts, paused);
+                TpsText.Update(false, readout.Value, readout.Target, readout.TickTime, s.Decimals, parts, paused);
             }
         }
     }
@@ -193,9 +182,9 @@ internal static class CounterOverlay
     private static void DrawMetric(Rect rect, bool isFps, FpsTpsSettings s)
     {
         Color color = Color.white;
-        if (s.Colorize && (isFps || (!paused && sampler.Ready)))
+        if (s.Colorize && (isFps || !paused))
         {
-            double value = isFps ? fps : target > 0 ? sampler.Value / target : 0;
+            double value = isFps ? fps : target > 0 ? readout.Value / target : 0;
             double good = isFps ? s.GoodFps : s.GoodTpsRatio;
             double warn = isFps ? s.WarningFps : s.WarningTpsRatio;
             color = value >= good ? Healthy[s.Palette] : value >= warn ? Warning[s.Palette] : Critical[s.Palette];

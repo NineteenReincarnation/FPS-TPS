@@ -1,29 +1,31 @@
-PASS Initial sample waits for a full window
-PASS Configured window is respected
-PASS Normal speed actual TPS
-PASS Actual throughput is not inferred from tick cost
-PASS Pause immediately clears stale TPS
-PASS Resume discards time spent paused
-PASS Fast speed TPS
-PASS Speed change discards mixed-speed window
-PASS Speed change retains the previous numeric reading while resampling
-PASS Superfast speed TPS
-PASS Tick rewind / save switch resets measurement
-PASS Hidden UI or long loading gap resets measurement
-PASS Recovers after loading gap
-PASS Clock discontinuity resets measurement
+PASS First reading is available immediately
+PASS Normal native TPS and target
+PASS Unchanged speed respects a five-second refresh interval
+PASS Fast speed bypasses refresh interval on the next draw
+PASS Fast speed updates both numbers without a sample window
+PASS Superfast speed also bypasses refresh interval
+PASS Consecutive rapid speed changes do not hold the old reading
+PASS Slow simulation is limited by native tick processing time
+PASS Native TPS does not exceed selected target
+PASS Pause bypasses refresh interval
+PASS Pause clears all stale metrics immediately
+PASS Resume bypasses refresh interval
+PASS Resume has no zero-reading wait
+PASS Fresh games with no native tick average display target immediately
+PASS Invalid native metrics are finite
+PASS Invalid execution timing does not report full speed
+PASS Clock rewind refreshes cached metrics
+PASS Configured refresh deadline is respected
 PASS Detailed TPS formatting
 PASS Text cache ignores invisible changes
-PASS Percentage refreshes even when rounded TPS is unchanged
-PASS Pause displays numeric zero and zero target without stale details
-PASS Paused formatting cannot leak a previous nonzero reading
-PASS Pause remains numeric when target display is disabled
-PASS Initial numeric display has no placeholder marker
-PASS Stable invariant numeric display
-PASS Invalid native timing values are sanitized
-PASS Sampler steady-state allocations = 0 bytes
+PASS Percentage refreshes when rounded TPS is unchanged
+PASS Pause uses numeric zero without stale target, cost, or text
+PASS Pause remains numeric with target hidden
+PASS Invariant numeric formatting
+PASS Invalid timing does not leak into labels
+PASS Native TPS calculation allocations = 0 bytes
 PASS Unchanged text cache allocations = 0 bytes
-RESULT 25 checks passed.
-BENCH sampler: 6.00 ns/call; 0 bytes / 2,000,000 calls
-BENCH unchanged text: 27.37 ns/call; 0 bytes / 2,000,000 calls
-These are core microbenchmarks, not an in-game FPS overhead measurement.
+RESULT 27 checks passed.
+BENCH native TPS: 17.43 ns/call; 0 bytes / 2,000,000 calls
+BENCH unchanged text: 20.76 ns/call; 0 bytes / 2,000,000 calls
+Core microbenchmarks only; native rendering cost is not included.

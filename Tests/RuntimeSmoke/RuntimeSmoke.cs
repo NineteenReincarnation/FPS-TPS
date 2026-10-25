@@ -1,13 +1,11 @@
 using System.Reflection;
 using Anno.FpsTps;
-using HarmonyLib;
 using RimWorld;
 using UnityEngine;
 using Verse;
 
 namespace Anno.FpsTps.RuntimeSmoke;
 
-/// <summary>Optional headless integration test DLL, never included in release packages.</summary>
 [StaticConstructorOnStartup]
 internal static class RuntimeSmoke
 {
@@ -26,19 +24,29 @@ internal static class RuntimeSmoke
             results.Add("PASS " + name);
         }
         Game? previousGame = Current.Game;
+        UIRoot? previousUiRoot = Current.Root.uiRoot;
         ProgramState previousState = Current.ProgramState;
         Event previousEvent = Event.current;
+        bool previousFps = DebugViewSettings.showFpsCounter;
+        bool previousTps = DebugViewSettings.showTpsCounter;
         FieldInfo settingsField = typeof(FpsTpsMod).GetField("Settings", BindingFlags.NonPublic | BindingFlags.Static)!;
         var originalSettings = (FpsTpsSettings)settingsField.GetValue(null)!;
+        Type assemblyType = typeof(FpsTpsMod);
+        Type overlay = assemblyType.Assembly.GetType("Anno.FpsTps.CounterOverlay")!;
+        Type guard = assemblyType.Assembly.GetType("Anno.FpsTps.NativeCounterVisibility")!;
+        MethodInfo restore = guard.GetMethod("Restore", BindingFlags.NonPublic | BindingFlags.Static)!;
+        Window? ownedWindow = null;
         try
         {
-            Check(LoadedModManager.GetMod<FpsTpsMod>() != null, "Mod instantiated by actual RimWorld 1.7 runtime");
-            MethodBase[] patched = Harmony.GetAllPatchedMethods()
-                .Where(m => Harmony.GetPatchInfo(m)?.Owners.Contains("anno.fpsandtps") == true).ToArray();
-            Check(patched.Length == 3 && patched.All(m => m.DeclaringType == typeof(GlobalControlsUtility)), "Exactly three UI-only patches; no tick or Update hooks");
-            Check("AT_Display".Translate().ToString() == "显示", "Chinese translation loaded by game");
+            Check(LoadedModManager.GetMod<FpsTpsMod>() != null, "Game loads Mod without prerequisite mods");
+            Check(ModsConfig.ActiveModsInLoadOrder.Count() == 2, "Isolated active Mods are Core and FPS & TPS only");
+            Check(!assemblyType.Assembly.GetReferencedAssemblies().Any(a => a.Name!.Contains("Harmony", StringComparison.OrdinalIgnoreCase)), "Compiled Mod has no Harmony reference");
+            Check(!AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name!.Contains("Harmony", StringComparison.OrdinalIgnoreCase)), "No Harmony assembly is loaded in the running game");
+            Check("AT_Display".Translate().ToString() == "显示", "Chinese translations load without a prerequisite");
+            Check(typeof(FpsTpsGameComponent).GetMethod("GameComponentTick")!.DeclaringType == typeof(GameComponent)
+                && typeof(FpsTpsGameComponent).GetMethod("GameComponentUpdate")!.DeclaringType == typeof(GameComponent), "No simulation tick or Update override");
 
-            FpsTpsSettings s = new() { FpsInterval = 1.3f, TpsInterval = 2.4f, Width = 370f, ShowPercent = true, Colorize = true, Palette = 2 };
+            FpsTpsSettings s = new() { FpsInterval = 1.3f, TpsInterval = 5f, Width = 370f, ShowPercent = true, Colorize = true, Palette = 2 };
             string path = Path.Combine(GenFilePaths.SaveDataFolderPath, "settings-roundtrip.xml");
             Scribe.saver.InitSaving(path, "FpsTpsSmoke");
             Scribe_Deep.Look(ref s, "settings");
@@ -48,37 +56,64 @@ internal static class RuntimeSmoke
             Scribe_Deep.Look(ref loaded, "settings");
             Scribe.loader.FinalizeLoading();
             FieldInfo[] fields = typeof(FpsTpsSettings).GetFields(BindingFlags.Instance | BindingFlags.Public);
-            Check(loaded != null && fields.All(f => Equals(f.GetValue(s), f.GetValue(loaded))), $"All {fields.Length} setting fields survive a native Scribe round trip");
+            Check(loaded != null && fields.All(f => Equals(f.GetValue(s), f.GetValue(loaded))), $"All {fields.Length} settings survive native serialization");
             s.FpsInterval = float.NaN;
             s.Width = float.PositiveInfinity;
-            s.WarningFps = 999f;
+            s.WarningFps = 999;
             s.Palette = 999;
             s.Sanitize();
             Check(s.FpsInterval == 0.5f && s.Width == 240f && s.WarningFps == s.GoodFps && s.Palette == 2, "Malformed settings are bounded and finite");
 
-            s = new FpsTpsSettings();
+            s = new FpsTpsSettings { TpsInterval = 5 };
             settingsField.SetValue(null, s);
             Current.Game = new Game();
             Current.ProgramState = ProgramState.Playing;
+            // Startup self-tests run before Root.Start has created the UI; supply the same
+            // native play UI class here and restore it before normal startup continues.
+            Current.Root.uiRoot = new UIRoot_Play();
+            var component = Current.Game.GetComponent<FpsTpsGameComponent>();
+            Check(component != null, "Game automatically creates its native GUI component");
             Event.current = new Event { type = EventType.mouseDown };
-            Type overlay = typeof(FpsTpsMod).Assembly.GetType("Anno.FpsTps.CounterOverlay")!;
+            component!.GameComponentOnGUI();
+            ownedWindow = (Window)typeof(FpsTpsGameComponent).GetField("window", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(component)!;
+            component.GameComponentOnGUI();
+            Check(Find.WindowStack.Windows.Count(w => w.GetType() == ownedWindow.GetType()) == 1, "Repeated GUI passes keep a single overlay window");
+            Check(ownedWindow.layer == WindowLayer.GameUI && ownedWindow.windowRect.width == 0
+                && !ownedWindow.focusWhenOpened && !ownedWindow.absorbInputAroundWindow
+                && !ownedWindow.preventCameraMotion && !ownedWindow.forcePause && !ownedWindow.preventSave,
+                "Overlay has no hit area and does not take focus, pause, block saving, or block the camera");
+            ownedWindow.OnCancelKeyPressed();
+            ownedWindow.OnAcceptKeyPressed();
+            Check(Find.WindowStack.IsOpen(ownedWindow) && Event.current.type == EventType.mouseDown,
+                "Overlay does not consume Escape or Enter");
             Check(overlay.GetField("manager", BindingFlags.NonPublic | BindingFlags.Static)!.FieldType
-                == typeof(System.WeakReference<TickManager>), "UI cache does not strongly retain a closed colony's tick manager");
+                == typeof(System.WeakReference<TickManager>), "UI cache does not strongly retain a closed colony");
             MethodInfo draw = overlay.GetMethod("Draw", BindingFlags.NonPublic | BindingFlags.Static)!;
-            MethodInfo replaces = overlay.GetMethod("ReplacesVanilla", BindingFlags.NonPublic | BindingFlags.Static)!;
             float Reserve()
             {
                 object[] args = [1000f, 200f, 500f];
                 draw.Invoke(null, args);
                 return 500f - (float)args[2];
             }
-            Check(Reserve() == 52f, "Two native rows reserve 52 UI units on input events");
+            Check(Reserve() == 52, "Vertical layout height remains 52 UI units");
             s.Horizontal = true;
-            Check(Reserve() == 26f, "Horizontal layout reserves one row");
+            Check(Reserve() == 26, "Horizontal layout height remains one native row");
             s.Gap = 5;
-            Check(Reserve() == 31f, "Custom gap is reserved rather than overlapping controls");
+            Check(Reserve() == 31, "Custom spacing is preserved");
             Check(overlay.GetField("manager", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null) == null,
-                "Input events do not sample game metrics");
+                "Input events do not collect metrics");
+
+            MethodInfo suppress = guard.GetMethod("Suppress", BindingFlags.NonPublic | BindingFlags.Static)!;
+            DebugViewSettings.showFpsCounter = DebugViewSettings.showTpsCounter = true;
+            suppress.Invoke(null, [s]);
+            Check(!DebugViewSettings.showFpsCounter && !DebugViewSettings.showTpsCounter, "Native duplicate flags are suppressed during native drawing only");
+            restore.Invoke(null, null);
+            Check(DebugViewSettings.showFpsCounter && DebugViewSettings.showTpsCounter, "Original native debug preferences are restored");
+            s.ShowTps = false;
+            suppress.Invoke(null, [s]);
+            Check(!DebugViewSettings.showFpsCounter && DebugViewSettings.showTpsCounter, "Hidden metric does not hide the native equivalent");
+            restore.Invoke(null, null);
+            s.ShowTps = true;
             Event.current = new Event { type = EventType.repaint };
             Text.Font = GameFont.Medium;
             Text.Anchor = TextAnchor.MiddleLeft;
@@ -86,42 +121,39 @@ internal static class RuntimeSmoke
             GUI.color = Color.cyan;
             Reserve();
             Check(Text.Font == GameFont.Medium && Text.Anchor == TextAnchor.MiddleLeft
-                && Text.WordWrap && GUI.color == Color.cyan, "Repaint restores native font, alignment, wrapping and color");
-            Event.current = new Event { type = EventType.mouseDown };
-            Check((bool)replaces.Invoke(null, [true])! && (bool)replaces.Invoke(null, [false])!, "Visible metrics replace vanilla debug duplicates");
-            float y = 500;
-            GlobalControlsUtility.DrawFpsCounter(1000, 200, ref y);
-            GlobalControlsUtility.DrawTpsCounter(1000, 200, ref y);
-            Check(y == 500, "Actual Harmony prefixes skip duplicate native drawing and height");
-            s.ShowTps = false;
-            Check(!(bool)replaces.Invoke(null, [false])!, "Hidden TPS does not suppress vanilla TPS");
+                && Text.WordWrap && GUI.color == Color.cyan, "Repaint restores native font, alignment, wrap, and color");
+            suppress.Invoke(null, [s]);
+            ownedWindow.WindowOnGUI();
+            Check(DebugViewSettings.showFpsCounter && DebugViewSettings.showTpsCounter, "Late native GUI callback restores duplicate flags after drawing");
+
             s.Enabled = false;
-            Check(Reserve() == 0 && !(bool)replaces.Invoke(null, [true])!, "Disabled mod reserves no space and leaves vanilla counters available");
+            Check(Reserve() == 0, "Disabled overlay takes no display space");
             s.Enabled = true;
             s.HidePaused = true;
-            typeof(TickManager).GetField("curTimeSpeed", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(Find.TickManager, TimeSpeed.Paused);
-            Check(Reserve() == 0 && !(bool)replaces.Invoke(null, [true])!, "Pause visibility and duplicate handling agree");
-            Check(overlay.GetField("manager", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null) == null,
-                "Hidden counters discard prior sampling state, including short hidden pauses");
+            var tickManager = Find.TickManager;
+            FieldInfo speedField = typeof(TickManager).GetField("curTimeSpeed", BindingFlags.Instance | BindingFlags.NonPublic)!;
+            speedField.SetValue(tickManager, TimeSpeed.Paused);
+            Check(Reserve() == 0, "Hide-on-pause remains functional");
             s.HidePaused = false;
-            s.ShowTps = true;
             MethodInfo refresh = overlay.GetMethod("Refresh", BindingFlags.NonPublic | BindingFlags.Static)!;
-            refresh.Invoke(null, [s]);
             object tpsText = overlay.GetField("TpsText", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
             string TextValue() => (string)tpsText.GetType().GetProperty("Text")!.GetValue(tpsText)!;
-            Check(TextValue() == "TPS: 0 (0)", "Actual paused overlay displays numeric 0 (0)");
-            typeof(TickManager).GetField("curTimeSpeed", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(Find.TickManager, TimeSpeed.Fast);
             refresh.Invoke(null, [s]);
-            // The startup callback may still force-pause the game even after selecting Fast.
-            float expectedTarget = Find.TickManager.Paused ? 0 : Find.TickManager.TickRateMultiplier * 60;
-            Check(TextValue() == $"TPS: 0 ({expectedTarget:F0})", "Speed selection respects native forced pause and keeps numeric display");
-            Check(typeof(FpsTpsSettings).GetField("Tooltips") == null
-                && overlay.GetField("tooltip", BindingFlags.NonPublic | BindingFlags.Static) == null,
-                "Overlay hover tooltip and its setting are removed");
+            Check(TextValue() == "TPS: 0 (0)", "Paused display is immediately numeric 0 (0)");
+            foreach (TimeSpeed speed in new[] { TimeSpeed.Normal, TimeSpeed.Fast, TimeSpeed.Superfast, TimeSpeed.Normal })
+            {
+                speedField.SetValue(tickManager, speed);
+                refresh.Invoke(null, [s]);
+                float target = tickManager.Paused ? 0 : tickManager.TickRateMultiplier * 60;
+                double expected = tickManager.Paused ? 0 : tickManager.MeanTickTime > 0
+                    ? Math.Min(1000d / tickManager.MeanTickTime, target) : target;
+                Check(TextValue() == $"TPS: {expected:F0} ({target:F0})", $"Native {speed} change refreshes immediately despite five-second interval");
+            }
+            Check(typeof(FpsTpsSettings).GetField("Tooltips") == null, "Overlay hover explanation stays removed");
             Current.ProgramState = ProgramState.Entry;
-            Check(Reserve() == 0, "Main menu has no counters");
-            results.Add($"RESULT {results.Count} runtime checks passed. Native UI pixels were not inspected.");
-            Log.Message("[FPS & TPS smoke] All runtime integration checks passed.");
+            Check(Reserve() == 0, "Main menu displays no counters");
+            results.Add($"RESULT {results.Count} runtime checks passed. Visual pixels were not inspected.");
+            Log.Message("[FPS & TPS smoke] Dependency-free native GUI checks passed.");
         }
         catch (Exception ex)
         {
@@ -130,8 +162,13 @@ internal static class RuntimeSmoke
         }
         finally
         {
+            restore.Invoke(null, null);
+            if (ownedWindow != null && Find.WindowStack.IsOpen(ownedWindow)) Find.WindowStack.TryRemove(ownedWindow, false);
+            DebugViewSettings.showFpsCounter = previousFps;
+            DebugViewSettings.showTpsCounter = previousTps;
             settingsField.SetValue(null, originalSettings);
             Current.Game = previousGame;
+            Current.Root.uiRoot = previousUiRoot;
             Current.ProgramState = previousState;
             Event.current = previousEvent;
             File.WriteAllLines(Path.Combine(GenFilePaths.SaveDataFolderPath, "runtime-smoke-results.txt"), results);

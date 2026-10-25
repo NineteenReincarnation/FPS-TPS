@@ -5,20 +5,17 @@
     <Nullable>enable</Nullable>
     <AssemblyName>Anno.FpsTps</AssemblyName>
     <RootNamespace>Anno.FpsTps</RootNamespace>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <Deterministic>true</Deterministic>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <RimWorldPath Condition="'$(RimWorldPath)' == ''">D:\Steam\steamapps\common\RimWorld</RimWorldPath>
-    <HarmonyPath Condition="'$(HarmonyPath)' == ''">$(RimWorldPath)\..\..\workshop\content\294100\2009463077\1.7\Assemblies\0Harmony.dll</HarmonyPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp" HintPath="$(RimWorldPath)\Assembly-CSharp.dll" Private="false" />
     <Reference Include="UnityStubs" HintPath="$(RimWorldPath)\UnityStubs.dll" Private="false" />
     <Reference Include="Waylith" HintPath="$(RimWorldPath)\Waylith.dll" Private="false" />
-    <Reference Include="0Harmony" HintPath="$(HarmonyPath)" Private="false" />
   </ItemGroup>
   <Target Name="CheckGameReferences" BeforeTargets="ResolveReferences">
     <Error Condition="!Exists('$(RimWorldPath)\Assembly-CSharp.dll')" Text="Set RimWorldPath to a RimWorld 1.7 installation." />
-    <Error Condition="!Exists('$(HarmonyPath)')" Text="Set HarmonyPath to Harmony's 1.7/Assemblies/0Harmony.dll." />
   </Target>
 </Project>

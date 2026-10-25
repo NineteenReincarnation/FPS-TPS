@@ -7,7 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="RuntimeSmoke/**/*.cs" />
-    <Compile Include="../Source/FpsTps/RateSampler.cs" Link="RateSampler.cs" />
+    <Compile Include="../Source/FpsTps/TpsReadout.cs" Link="TpsReadout.cs" />
     <Compile Include="../Source/FpsTps/MetricText.cs" Link="MetricText.cs" />
   </ItemGroup>
 </Project>

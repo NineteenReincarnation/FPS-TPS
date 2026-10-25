@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0 — 2026-10-25
+
+- Removed the Harmony prerequisite, assembly reference, and all runtime patches.
+- Uses official GameComponent/Window GUI callbacks and native layout bounds.
+- TPS now follows the native tick-processing-time calculation, with immediate speed/pause/resume updates even at a five-second refresh interval.
+- Retained display settings, native debug counter deduplication, and numeric pause display.
+
 ## 1.0.1 — 2026-10-25
 
 - TPS always uses numbers; pause shows `0 (0)` and speed changes retain the last measured value until refreshed.

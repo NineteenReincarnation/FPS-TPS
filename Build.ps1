@@ -1,21 +1,11 @@
 [CmdletBinding()]
 param(
     [string]$RimWorldPath = 'D:\Steam\steamapps\common\RimWorld',
-    [string]$HarmonyPath,
     [string]$DeployPath
 )
 $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
 $game = [IO.Path]::GetFullPath($RimWorldPath)
-if (-not $HarmonyPath) {
-    $candidates = @(
-        (Join-Path $game '..\..\workshop\content\294100\2009463077\1.7\Assemblies\0Harmony.dll'),
-        (Join-Path $game 'Mods\Harmony\1.7\Assemblies\0Harmony.dll')
-    )
-    $HarmonyPath = $candidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
-}
-if (-not $HarmonyPath -or -not (Test-Path -LiteralPath $HarmonyPath)) { throw 'Harmony 1.7 not found. Pass -HarmonyPath.' }
-$harmony = [IO.Path]::GetFullPath($HarmonyPath)
 $versionFile = Join-Path $game 'Version.txt'
 if (-not (Test-Path -LiteralPath $versionFile) -or (Get-Content -LiteralPath $versionFile -Raw) -notmatch '^1\.7\.') {
     throw 'This project targets the RimWorld 1.7 / .NET 10 runtime.'
@@ -25,7 +15,7 @@ New-Item -ItemType Directory -Path $artifacts -Force | Out-Null
 
 & dotnet run --project (Join-Path $root 'Tests\FpsTps.Tests.csproj') -c Release --nologo | Tee-Object -FilePath (Join-Path $artifacts 'core-tests.txt')
 if ($LASTEXITCODE -ne 0) { throw 'Core tests failed.' }
-& dotnet build (Join-Path $root 'Source\FpsTps\FpsTps.csproj') -c Release --nologo "-p:RimWorldPath=$game" "-p:HarmonyPath=$harmony"
+& dotnet build (Join-Path $root 'Source\FpsTps\FpsTps.csproj') -c Release --nologo "-p:RimWorldPath=$game"
 if ($LASTEXITCODE -ne 0) { throw 'Mod build failed.' }
 
 $mod = Join-Path $root 'Mod'
@@ -35,6 +25,7 @@ Copy-Item -LiteralPath (Join-Path $root 'Source\FpsTps\bin\Release\net10.0\Anno.
 Copy-Item -LiteralPath (Join-Path $root 'LICENSE') -Destination (Join-Path $mod 'LICENSE') -Force
 Get-ChildItem -LiteralPath $mod -Recurse -Filter '*.xml' | ForEach-Object { [xml](Get-Content -LiteralPath $_.FullName -Raw) | Out-Null }
 [xml]$metadata = Get-Content -LiteralPath (Join-Path $mod 'About\About.xml') -Raw
+if ($metadata.ModMetaData.modDependencies -or $metadata.ModMetaData.loadAfter) { throw 'Distribution must have no prerequisite Mods.' }
 if ($metadata.ModMetaData.packageId -cne 'anno.fpsandtps' -or $metadata.ModMetaData.author -cne 'anno') { throw 'Invalid author/package ID.' }
 $version = $metadata.ModMetaData.modVersion
 [xml]$english = Get-Content -LiteralPath (Join-Path $mod 'Languages\English\Keyed\FpsTps.xml') -Raw

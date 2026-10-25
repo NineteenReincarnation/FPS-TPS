@@ -1,8 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$RimWorldPath = 'D:\Steam\steamapps\common\RimWorld',
-    [string]$ModPath = 'D:\Steam\steamapps\common\RimWorld\Mods\FPS&TPS',
-    [string]$HarmonyPath
+    [string]$ModPath = 'D:\Steam\steamapps\common\RimWorld\Mods\FPS&TPS'
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
@@ -12,7 +11,6 @@ if (Get-Process -Name RimWorld -ErrorAction SilentlyContinue) { throw 'Close exi
 [xml]$about = Get-Content -LiteralPath (Join-Path $mod 'About\About.xml') -Raw
 if ($about.ModMetaData.packageId -ne 'anno.fpsandtps') { throw 'ModPath is not this mod.' }
 $buildArgs = @('build', (Join-Path $PSScriptRoot 'RuntimeSmoke\RuntimeSmoke.csproj'), '-c', 'Release', '--nologo', "-p:RimWorldPath=$game")
-if ($HarmonyPath) { $buildArgs += "-p:HarmonyPath=$HarmonyPath" }
 & dotnet @buildArgs
 if ($LASTEXITCODE -ne 0) { throw 'Runtime probe build failed.' }
 $compiled = Join-Path $root 'Source\FpsTps\bin\Release\net10.0\Anno.FpsTps.dll'
@@ -24,8 +22,24 @@ $data = Join-Path $root ('.test-data\runtime-' + [Guid]::NewGuid().ToString('N')
 New-Item -ItemType Directory -Path (Join-Path $data 'Config') -Force | Out-Null
 @'
 <?xml version="1.0" encoding="utf-8"?>
-<ModsConfigData><version>1.7</version><activeMods><li>brrainz.harmony</li><li>ludeon.rimworld</li><li>anno.fpsandtps</li></activeMods><knownExpansions /></ModsConfigData>
+<ModsConfigData><version>1.7</version><activeMods><li>ludeon.rimworld</li><li>anno.fpsandtps</li></activeMods><knownExpansions /></ModsConfigData>
 '@ | Set-Content -LiteralPath (Join-Path $data 'Config\ModsConfig.xml') -Encoding utf8
+# Mark installed DLC as already known so the game does not auto-enable newly discovered expansions.
+$modsFile = Join-Path $data 'Config\ModsConfig.xml'
+[xml]$modsConfig = Get-Content -LiteralPath $modsFile -Raw
+Get-ChildItem -LiteralPath (Join-Path $game 'Data') -Directory | ForEach-Object {
+    $metadataFile = Join-Path $_.FullName 'About\About.xml'
+    if (Test-Path -LiteralPath $metadataFile) {
+        [xml]$metadata = Get-Content -LiteralPath $metadataFile -Raw
+        $packageId = $metadata.ModMetaData.packageId
+        if ($packageId -and $packageId -ne 'ludeon.rimworld') {
+            $node = $modsConfig.CreateElement('li')
+            $node.InnerText = $packageId.ToLowerInvariant()
+            $modsConfig.DocumentElement.SelectSingleNode('knownExpansions').AppendChild($node) | Out-Null
+        }
+    }
+}
+$modsConfig.Save($modsFile)
 @'
 <?xml version="1.0" encoding="utf-8"?>
 <PrefsData><devMode>False</devMode><langFolderName>ChineseSimplified (简体中文)</langFolderName></PrefsData>
