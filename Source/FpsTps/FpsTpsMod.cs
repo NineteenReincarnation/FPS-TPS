@@ -15,7 +15,7 @@ public sealed class FpsTpsMod : Mod
         Settings = GetSettings<FpsTpsSettings>();
         Settings.Sanitize();
         new Harmony("anno.fpsandtps").PatchAll(typeof(FpsTpsMod).Assembly);
-        Log.Message("[FPS & TPS] anno.fpsandtps 1.1.2 loaded.");
+        Log.Message("[FPS & TPS] anno.fpsandtps 1.2.2 loaded.");
     }
 
     public override string SettingsCategory() => "FPS & TPS";

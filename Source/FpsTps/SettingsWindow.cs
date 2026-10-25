@@ -174,7 +174,7 @@ internal sealed class SettingsWindow
 
     private void Help()
     {
-        list.Label("FPS & TPS 1.1.2 | anno | anno.fpsandtps");
+        list.Label("FPS & TPS 1.2.2 | anno | anno.fpsandtps");
         Heading("HelpMeaning");
         list.Label(T("HelpMeaningText"));
         Heading("HelpPerformance");
