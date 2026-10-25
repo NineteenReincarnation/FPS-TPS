@@ -36,7 +36,7 @@ internal static class RuntimeSmoke
             MethodBase[] patched = Harmony.GetAllPatchedMethods()
                 .Where(m => Harmony.GetPatchInfo(m)?.Owners.Contains("anno.fpsandtps") == true).ToArray();
             Check(patched.Length == 3 && patched.All(m => m.DeclaringType == typeof(GlobalControlsUtility)), "Exactly three UI-only patches; no tick or Update hooks");
-            Check("AT_Paused".Translate().ToString() == "已暂停", "Chinese translation loaded by game");
+            Check("AT_Display".Translate().ToString() == "显示", "Chinese translation loaded by game");
 
             FpsTpsSettings s = new() { FpsInterval = 1.3f, TpsInterval = 2.4f, Width = 370f, ShowPercent = true, Colorize = true, Palette = 2 };
             string path = Path.Combine(GenFilePaths.SaveDataFolderPath, "settings-roundtrip.xml");
@@ -104,6 +104,20 @@ internal static class RuntimeSmoke
             Check(overlay.GetField("manager", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null) == null,
                 "Hidden counters discard prior sampling state, including short hidden pauses");
             s.HidePaused = false;
+            s.ShowTps = true;
+            MethodInfo refresh = overlay.GetMethod("Refresh", BindingFlags.NonPublic | BindingFlags.Static)!;
+            refresh.Invoke(null, [s]);
+            object tpsText = overlay.GetField("TpsText", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
+            string TextValue() => (string)tpsText.GetType().GetProperty("Text")!.GetValue(tpsText)!;
+            Check(TextValue() == "TPS: 0 (0)", "Actual paused overlay displays numeric 0 (0)");
+            typeof(TickManager).GetField("curTimeSpeed", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(Find.TickManager, TimeSpeed.Fast);
+            refresh.Invoke(null, [s]);
+            // The startup callback may still force-pause the game even after selecting Fast.
+            float expectedTarget = Find.TickManager.Paused ? 0 : Find.TickManager.TickRateMultiplier * 60;
+            Check(TextValue() == $"TPS: 0 ({expectedTarget:F0})", "Speed selection respects native forced pause and keeps numeric display");
+            Check(typeof(FpsTpsSettings).GetField("Tooltips") == null
+                && overlay.GetField("tooltip", BindingFlags.NonPublic | BindingFlags.Static) == null,
+                "Overlay hover tooltip and its setting are removed");
             Current.ProgramState = ProgramState.Entry;
             Check(Reserve() == 0, "Main menu has no counters");
             results.Add($"RESULT {results.Count} runtime checks passed. Native UI pixels were not inspected.");

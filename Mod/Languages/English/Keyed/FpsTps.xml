@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <AT_Display>Display</AT_Display>
   <AT_Sampling>Sampling</AT_Sampling>
@@ -7,7 +7,6 @@
   <AT_Defaults>Restore defaults</AT_Defaults>
   <AT_Minimal>Low overhead preset</AT_Minimal>
   <AT_Detailed>Detailed preset</AT_Detailed>
-  <AT_Paused>Paused</AT_Paused>
   <AT_Metrics>Visible metrics</AT_Metrics>
   <AT_Visibility>Visibility &amp; compatibility</AT_Visibility>
   <AT_Enabled>Enable counters</AT_Enabled>
@@ -27,9 +26,7 @@
   <AT_ShowWorld>Show on the world map</AT_ShowWorld>
   <AT_ShowWorldTip>Use the same native controls hook in colony and world view. The main menu never displays counters.</AT_ShowWorldTip>
   <AT_HidePaused>Hide all counters while paused</AT_HidePaused>
-  <AT_HidePausedTip>Hide both FPS and TPS during manual or forced pause; otherwise FPS remains live and TPS reads Paused.</AT_HidePausedTip>
-  <AT_Tooltips>Show hover explanation</AT_Tooltips>
-  <AT_TooltipsTip>Generate the translated explanation only when the counter area is first hovered.</AT_TooltipsTip>
+  <AT_HidePausedTip>Hide both counters during manual or forced pause. Otherwise FPS stays live and TPS displays 0 (0).</AT_HidePausedTip>
   <AT_SuppressVanilla>Avoid duplicate vanilla debug counters</AT_SuppressVanilla>
   <AT_SuppressVanillaTip>Skip the equivalent vanilla FPS/TPS debug row only while this mod actually shows that metric. Does not change debug preferences or hide other mods' counters.</AT_SuppressVanillaTip>
   <AT_SamplingInfo>Longer intervals reduce formatting work and make TPS steadier. Sampling is constant-time, without per-tick patches. Recommended: FPS 0.5 s, TPS 1.0 s.</AT_SamplingInfo>
@@ -42,7 +39,7 @@
   <AT_MethodHeading>What is measured</AT_MethodHeading>
   <AT_MethodInfo>FPS = 1000 / the game's smoothed frame time in milliseconds. TPS = completed tick difference / elapsed wall-clock seconds. Target TPS = current game tick rate multiplier × 60. Tick cost is read from the game's existing average. Actual TPS is not a theoretical speed estimated from tick cost.</AT_MethodInfo>
   <AT_PauseHeading>Pauses, speed changes &amp; loading</AT_PauseHeading>
-  <AT_PauseInfo>Pausing immediately clears stale TPS. After resume, speed/target changes, save changes or a long UI gap, TPS shows a dash until a full fresh window is available. Normal windows may include partial stalls, which correctly lower actual TPS. All counters use real time rather than game time.</AT_PauseInfo>
+  <AT_PauseInfo>Paused TPS displays 0 (0). Speed changes keep the last measured value until the next sample. Resume, loading, or a long hidden period starts a fresh sample.</AT_PauseInfo>
   <AT_Horizontal>Put FPS and TPS on one row</AT_Horizontal>
   <AT_HorizontalTip>Use two right-aligned columns on a single native row. Enable automatic width when displaying timing details.</AT_HorizontalTip>
   <AT_TpsFirst>Display TPS before FPS</AT_TpsFirst>
@@ -63,7 +60,7 @@
   <AT_BackgroundAlphaTip>Optional plain black background. Zero uses the native transparent appearance and skips the extra draw call.</AT_BackgroundAlphaTip>
   <AT_ColorHeading>Colors &amp; performance thresholds</AT_ColorHeading>
   <AT_Colorize>Color values by performance</AT_Colorize>
-  <AT_ColorizeTip>Healthy, warning, and critical colors follow the thresholds below. Paused or warming-up TPS remains gray.</AT_ColorizeTip>
+  <AT_ColorizeTip>Use healthy, warning, and critical colors at the thresholds below. Paused or resampling TPS uses the default color.</AT_ColorizeTip>
   <AT_Palette>Color palette (click to cycle)</AT_Palette>
   <AT_Palette0>Green / yellow / red</AT_Palette0>
   <AT_Palette1>Blue / yellow / orange</AT_Palette1>
@@ -79,14 +76,9 @@
   <AT_HelpMeaning>Reading the counters</AT_HelpMeaning>
   <AT_HelpMeaningText>FPS describes visual smoothness; TPS describes simulation progress. A high FPS does not guarantee high TPS. Parentheses show the current target, for example TPS: 180 (180). Brief percentages over 100% are possible with tick catch-up. No settings here accelerate simulation or change game speed.</AT_HelpMeaningText>
   <AT_HelpPerformance>Low-overhead design</AT_HelpPerformance>
-  <AT_HelpPerformanceText>Three UI-only Harmony patches. No per-tick patches, background threads, polling tasks, pawn scans, or save components in this mod. FPS reuses native timing; TPS reads tick deltas. The target multiplier is queried at the TPS interval or on pause/speed changes because the game's getter can check colonist activity. Text and widths are cached. Sampling/drawing runs only on repaint, at most once per frame. Tooltip text is lazy. Disabled counters skip collection. Native UI rendering and changed text still have a small cost; this mod does not promise zero overhead.</AT_HelpPerformanceText>
+  <AT_HelpPerformanceText>Reuses native frame timing, samples actual TPS at configured intervals, and caches text and width. No per-tick patches. Hidden metrics skip their sampling.</AT_HelpPerformanceText>
   <AT_HelpCompatibility>Compatibility &amp; saves</AT_HelpCompatibility>
   <AT_HelpCompatibilityText>Requires RimWorld 1.7 and Harmony 1.7. No DLC required. Counters are inserted above the native time controls and reserve space before date/weather/letters are laid out. GUI color, font, alignment and wrapping are restored after drawing. No save data is added; safe to add/remove. Other mods that replace the entire controls stack may need a compatibility patch. Disable other FPS/TPS overlays if they duplicate this display.</AT_HelpCompatibilityText>
   <AT_HelpPresets>Presets &amp; saving</AT_HelpPresets>
   <AT_HelpPresetsText>Defaults restores every setting. Low overhead uses 1 s FPS and 2 s TPS refresh, with no timing details, percentages, colors or background. Detailed enables both counters, target, percentage and timing details at 0.5 s / 1 s. Layout and visibility preferences are preserved by these two presets. Changes apply immediately and are saved when closing Mod settings.</AT_HelpPresetsText>
-  <AT_OverlayTip>FPS: rendered frames per real second, from the game's smoothed frame time.
-TPS: completed simulation ticks per real second. Parentheses: current target TPS.
-ms/f: total frame time (includes waiting). ms/t: tick execution time.
-Paused clears stale TPS; a dash means a fresh sample is warming up.
-Configure in Options → Mod settings → FPS &amp; TPS.</AT_OverlayTip>
 </LanguageData>

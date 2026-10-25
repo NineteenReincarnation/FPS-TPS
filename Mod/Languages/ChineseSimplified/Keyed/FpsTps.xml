@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <AT_Display>显示</AT_Display>
   <AT_Sampling>采样</AT_Sampling>
@@ -7,7 +7,6 @@
   <AT_Defaults>恢复默认</AT_Defaults>
   <AT_Minimal>简洁预设</AT_Minimal>
   <AT_Detailed>详细预设</AT_Detailed>
-  <AT_Paused>已暂停</AT_Paused>
   <AT_Metrics>显示指标</AT_Metrics>
   <AT_Visibility>显示条件与兼容</AT_Visibility>
   <AT_Enabled>启用计数器</AT_Enabled>
@@ -27,9 +26,7 @@
   <AT_ShowWorld>在世界地图显示</AT_ShowWorld>
   <AT_ShowWorldTip>殖民地与世界地图复用同一原生控制栏入口，主菜单不显示。</AT_ShowWorldTip>
   <AT_HidePaused>暂停时隐藏所有计数器</AT_HidePaused>
-  <AT_HidePausedTip>手动暂停或窗口强制暂停时隐藏全部指标。关闭时，FPS 继续刷新，TPS 显示“已暂停”。</AT_HidePausedTip>
-  <AT_Tooltips>显示悬停说明</AT_Tooltips>
-  <AT_TooltipsTip>第一次悬停到计数区域时才生成说明文本。</AT_TooltipsTip>
+  <AT_HidePausedTip>手动暂停或窗口强制暂停时隐藏全部指标。关闭时，FPS 继续刷新，TPS 显示 0 (0)。</AT_HidePausedTip>
   <AT_SuppressVanilla>避免与原版调试计数器重复</AT_SuppressVanilla>
   <AT_SuppressVanillaTip>仅当本 Mod 正在显示对应指标时，跳过原版重复的 FPS/TPS 调试行。不修改开发者设置，也不隐藏其他 Mod 的计数器。</AT_SuppressVanillaTip>
   <AT_SamplingInfo>较长间隔可减少文本更新并让 TPS 更稳定。采样为固定开销，不给每个 tick 打补丁。建议 FPS 0.5 秒、TPS 1.0 秒。</AT_SamplingInfo>
@@ -42,7 +39,7 @@
   <AT_MethodHeading>统计方式</AT_MethodHeading>
   <AT_MethodInfo>FPS = 1000 / 游戏平滑帧时间（毫秒）。TPS = 实际完成的 tick 差值 / 经过的真实秒数。目标 TPS = 游戏当前 tick 速度倍率 × 60。tick 耗时直接读取游戏平均值。实际 TPS 不使用 tick 耗时反推理论速度。</AT_MethodInfo>
   <AT_PauseHeading>暂停、变速与读档</AT_PauseHeading>
-  <AT_PauseInfo>暂停会立即清除旧 TPS。恢复、变速/目标变化、切换存档或界面长时间未绘制后，先显示横线，待完整的新窗口采样后再显示数值。窗口内的普通卡顿会如实降低实际 TPS。所有指标均以真实时间统计。</AT_PauseInfo>
+  <AT_PauseInfo>暂停时 TPS 显示 0 (0)。变速时保留上一次测量值，待新采样完成后更新。恢复、读档或长时间未显示后重新采样。</AT_PauseInfo>
   <AT_Horizontal>FPS 和 TPS 在同一行显示</AT_Horizontal>
   <AT_HorizontalTip>在同一原生行内分为两列右对齐。显示耗时等详细信息时建议启用自动宽度。</AT_HorizontalTip>
   <AT_TpsFirst>优先显示 TPS</AT_TpsFirst>
@@ -63,7 +60,7 @@
   <AT_BackgroundAlphaTip>可选纯黑背景。0 使用原生透明外观，并省去额外绘制。</AT_BackgroundAlphaTip>
   <AT_ColorHeading>颜色与性能阈值</AT_ColorHeading>
   <AT_Colorize>按性能阈值为数字着色</AT_Colorize>
-  <AT_ColorizeTip>根据下方阈值使用正常、警告、严重颜色。暂停或采样中的 TPS 显示灰色。</AT_ColorizeTip>
+  <AT_ColorizeTip>根据下方阈值使用正常、警告、严重颜色。暂停和重新采样期间使用默认颜色。</AT_ColorizeTip>
   <AT_Palette>配色（点击切换）</AT_Palette>
   <AT_Palette0>绿 / 黄 / 红</AT_Palette0>
   <AT_Palette1>蓝 / 黄 / 橙</AT_Palette1>
@@ -79,14 +76,9 @@
   <AT_HelpMeaning>如何理解数值</AT_HelpMeaning>
   <AT_HelpMeaningText>FPS 表示画面流畅度，TPS 表示模拟推进速度；FPS 高并不代表 TPS 高。括号中为当前目标，例如 TPS: 180 (180)。游戏追赶 tick 时，短暂超过 100% 属正常现象。这里的设置不加速模拟，也不修改游戏速度。</AT_HelpMeaningText>
   <AT_HelpPerformance>低开销设计</AT_HelpPerformance>
-  <AT_HelpPerformanceText>只有三个 UI Harmony 补丁；本 Mod 无逐 tick 补丁、后台线程、轮询任务、Pawn 遍历或存档组件。FPS 复用原生统计，TPS 读取 tick 差值。目标倍率仅在 TPS 间隔到期或暂停/变速时读取，因为游戏该属性内部可能检查殖民者状态。显示文本与宽度缓存；采样仅在重绘时执行，每帧最多一次；悬停文本延迟生成；关闭指标即停止对应统计。原生 UI 绘制与变化文本仍有少量成本，不承诺绝对零开销。</AT_HelpPerformanceText>
+  <AT_HelpPerformanceText>复用游戏已有帧时间，按间隔统计实际 TPS，缓存文字与宽度。无逐 tick 补丁；关闭指标即停止对应采样。</AT_HelpPerformanceText>
   <AT_HelpCompatibility>兼容与存档</AT_HelpCompatibility>
   <AT_HelpCompatibilityText>需要 RimWorld 1.7 与对应版本的 Harmony，不需要 DLC。指标插入原生时间控制按钮上方，在日期、天气、信件布局前预留空间。绘制后恢复 GUI 颜色、字体、对齐及换行状态。不写入游戏存档，可随时添加或移除。完全替换原生控制栏的 Mod 可能需要兼容补丁；若与其他 FPS/TPS 显示重复，请关闭相应显示。</AT_HelpCompatibilityText>
   <AT_HelpPresets>预设与保存</AT_HelpPresets>
   <AT_HelpPresetsText>“恢复默认”会重置全部设置。“简洁预设”使用 FPS 1 秒、TPS 2 秒间隔，关闭耗时、百分比、颜色及背景。“详细预设”开启两种指标、目标、百分比及耗时，间隔为 0.5 秒 / 1 秒。两种预设保留布局和显示条件偏好。修改立即生效，关闭 Mod 设置时保存。</AT_HelpPresetsText>
-  <AT_OverlayTip>FPS：每真实秒渲染帧数，使用游戏平滑帧时间。
-TPS：每真实秒实际完成的 tick 数；括号中为当前目标。
-ms/f：总帧时间（含等待）；ms/t：tick 执行耗时。
-暂停时清除旧 TPS；横线表示正在等待完整采样。
-设置位置：选项 → Mod 设置 → FPS &amp; TPS。</AT_OverlayTip>
 </LanguageData>

@@ -6,6 +6,7 @@ PASS Pause immediately clears stale TPS
 PASS Resume discards time spent paused
 PASS Fast speed TPS
 PASS Speed change discards mixed-speed window
+PASS Speed change retains the previous numeric reading while resampling
 PASS Superfast speed TPS
 PASS Tick rewind / save switch resets measurement
 PASS Hidden UI or long loading gap resets measurement
@@ -14,13 +15,15 @@ PASS Clock discontinuity resets measurement
 PASS Detailed TPS formatting
 PASS Text cache ignores invisible changes
 PASS Percentage refreshes even when rounded TPS is unchanged
-PASS Paused text omits stale cost and target
-PASS Warm-up marker and target
+PASS Pause displays numeric zero and zero target without stale details
+PASS Paused formatting cannot leak a previous nonzero reading
+PASS Pause remains numeric when target display is disabled
+PASS Initial numeric display has no placeholder marker
 PASS Stable invariant numeric display
 PASS Invalid native timing values are sanitized
 PASS Sampler steady-state allocations = 0 bytes
 PASS Unchanged text cache allocations = 0 bytes
-RESULT 22 checks passed.
-BENCH sampler: 6.67 ns/call; 0 bytes / 2,000,000 calls
-BENCH unchanged text: 29.39 ns/call; 0 bytes / 2,000,000 calls
+RESULT 25 checks passed.
+BENCH sampler: 6.00 ns/call; 0 bytes / 2,000,000 calls
+BENCH unchanged text: 27.37 ns/call; 0 bytes / 2,000,000 calls
 These are core microbenchmarks, not an in-game FPS overhead measurement.

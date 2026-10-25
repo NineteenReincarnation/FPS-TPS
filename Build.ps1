@@ -58,8 +58,6 @@ if (Test-Path -LiteralPath $publishedId) { throw 'PublishedFileId.txt must not b
 $zip = Join-Path $artifacts ("FPS-TPS-v$version-RimWorld-1.7.zip")
 # Compress-Archive excludes hidden files; only public Mod content is staged here.
 Compress-Archive -LiteralPath $packageRoot -DestinationPath $zip -Force
-$hash = Get-FileHash -LiteralPath $zip -Algorithm SHA256
-($hash.Hash.ToLowerInvariant() + '  ' + [IO.Path]::GetFileName($zip)) | Set-Content -LiteralPath (Join-Path $artifacts 'SHA256SUMS.txt') -Encoding utf8
 
 if ($DeployPath) {
     $destination = [IO.Path]::GetFullPath($DeployPath)
@@ -74,4 +72,3 @@ if ($DeployPath) {
     Write-Output "Installed: $destination"
 }
 Write-Output "Release package: $zip"
-Write-Output "SHA256: $($hash.Hash.ToLowerInvariant())"

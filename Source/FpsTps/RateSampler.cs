@@ -16,8 +16,9 @@ internal struct RateSampler
 
     public bool Advance(double now, int ticks, bool paused, float target, double interval)
     {
-        bool discontinuity = !initialized || paused != wasPaused || target != previousTarget
-            || ticks < lastTicks || now < lastTime || now - lastTime > Math.Max(2d, interval * 3d);
+        bool newTimeline = !initialized || ticks < lastTicks || now < lastTime
+            || now - lastTime > Math.Max(2d, interval * 3d);
+        bool discontinuity = newTimeline || paused != wasPaused || target != previousTarget;
         lastTime = now;
         lastTicks = ticks;
         previousTarget = target;
@@ -27,7 +28,9 @@ internal struct RateSampler
             initialized = true;
             startTime = now;
             startTicks = ticks;
-            Value = 0;
+            // Keep the last measured number across speed changes instead of flashing a placeholder.
+            if (newTimeline || paused)
+                Value = 0;
             Ready = paused;
             return true;
         }

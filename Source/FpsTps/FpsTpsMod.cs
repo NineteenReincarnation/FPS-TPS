@@ -15,7 +15,7 @@ public sealed class FpsTpsMod : Mod
         Settings = GetSettings<FpsTpsSettings>();
         Settings.Sanitize();
         new Harmony("anno.fpsandtps").PatchAll(typeof(FpsTpsMod).Assembly);
-        Log.Message("[FPS & TPS] anno.fpsandtps 1.0.0 loaded (RimWorld 1.7). No per-tick hooks.");
+        Log.Message("[FPS & TPS] anno.fpsandtps 1.0.1 loaded (RimWorld 1.7). No per-tick hooks.");
     }
 
     public override string SettingsCategory() => "FPS & TPS";

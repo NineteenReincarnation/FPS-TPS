@@ -128,7 +128,6 @@ internal sealed class SettingsWindow
         Heading("Visibility");
         Check("ShowWorld", ref s.ShowWorld);
         Check("HidePaused", ref s.HidePaused);
-        Check("Tooltips", ref s.Tooltips);
         Check("SuppressVanilla", ref s.SuppressVanilla);
     }
 
@@ -175,7 +174,7 @@ internal sealed class SettingsWindow
 
     private void Help()
     {
-        list.Label("FPS & TPS 1.0.0 | anno | anno.fpsandtps");
+        list.Label("FPS & TPS 1.0.1 | anno | anno.fpsandtps");
         Heading("HelpMeaning");
         list.Label(T("HelpMeaningText"));
         Heading("HelpPerformance");

@@ -13,7 +13,6 @@ public sealed class FpsTpsSettings : ModSettings
     public bool ShowTickTime;
     public bool ShowWorld = true;
     public bool HidePaused;
-    public bool Tooltips = true;
     public bool SuppressVanilla = true;
     public bool Horizontal;
     public bool TpsFirst;
@@ -46,7 +45,6 @@ public sealed class FpsTpsSettings : ModSettings
         Scribe_Values.Look(ref ShowTickTime, "showTickTime");
         Scribe_Values.Look(ref ShowWorld, "showWorld", true);
         Scribe_Values.Look(ref HidePaused, "hidePaused");
-        Scribe_Values.Look(ref Tooltips, "tooltips", true);
         Scribe_Values.Look(ref SuppressVanilla, "suppressVanilla", true);
         Scribe_Values.Look(ref Horizontal, "horizontal");
         Scribe_Values.Look(ref TpsFirst, "tpsFirst");

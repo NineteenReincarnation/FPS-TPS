@@ -1,7 +1,7 @@
 PASS Mod instantiated by actual RimWorld 1.7 runtime
 PASS Exactly three UI-only patches; no tick or Update hooks
 PASS Chinese translation loaded by game
-PASS All 29 setting fields survive a native Scribe round trip
+PASS All 28 setting fields survive a native Scribe round trip
 PASS Malformed settings are bounded and finite
 PASS UI cache does not strongly retain a closed colony's tick manager
 PASS Two native rows reserve 52 UI units on input events
@@ -15,5 +15,8 @@ PASS Hidden TPS does not suppress vanilla TPS
 PASS Disabled mod reserves no space and leaves vanilla counters available
 PASS Pause visibility and duplicate handling agree
 PASS Hidden counters discard prior sampling state, including short hidden pauses
+PASS Actual paused overlay displays numeric 0 (0)
+PASS Speed selection respects native forced pause and keeps numeric display
+PASS Overlay hover tooltip and its setting are removed
 PASS Main menu has no counters
-RESULT 18 runtime checks passed. Native UI pixels were not inspected.
+RESULT 21 runtime checks passed. Native UI pixels were not inspected.
