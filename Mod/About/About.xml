@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>FPS &amp; TPS</name>
+  <author>anno</author>
+  <packageId>anno.fpsandtps</packageId>
+  <supportedVersions><li>1.7</li></supportedVersions>
+  <modVersion>1.0.0</modVersion>
+  <url>https://github.com/NineteenReincarnation/FPS-TPS</url>
+  <modDependencies>
+    <li>
+      <packageId>brrainz.harmony</packageId>
+      <displayName>Harmony</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+    </li>
+  </modDependencies>
+  <loadAfter><li>brrainz.harmony</li></loadAfter>
+  <description>FPS &amp; TPS for RimWorld 1.7 by anno.
+
+在右下角原生时间控制栏上方显示 FPS 和实际 TPS，无需开发者模式。
+支持详细设置：独立刷新间隔、目标 TPS、达标比例、帧/刻耗时、横向/纵向布局、字体、间距、宽度、背景、颜色和阈值。
+支持地图与世界地图、暂停识别，以及中文和英文。采样和文本缓存专为低开销设计，无逐 tick 补丁。
+
+Native bottom-right FPS and actual TPS counters, with detailed settings and Chinese/English localization. No developer mode needed. No per-tick patches; reuses the game's FPS timing, samples tick deltas, and caches display text.
+
+Requires Harmony for RimWorld 1.7. This is an independent implementation inspired by the display idea of FPS And TPS, not an update of its code.</description>
+</ModMetaData>

@@ -1,0 +1,19 @@
+PASS Mod instantiated by actual RimWorld 1.7 runtime
+PASS Exactly three UI-only patches; no tick or Update hooks
+PASS Chinese translation loaded by game
+PASS All 29 setting fields survive a native Scribe round trip
+PASS Malformed settings are bounded and finite
+PASS UI cache does not strongly retain a closed colony's tick manager
+PASS Two native rows reserve 52 UI units on input events
+PASS Horizontal layout reserves one row
+PASS Custom gap is reserved rather than overlapping controls
+PASS Input events do not sample game metrics
+PASS Repaint restores native font, alignment, wrapping and color
+PASS Visible metrics replace vanilla debug duplicates
+PASS Actual Harmony prefixes skip duplicate native drawing and height
+PASS Hidden TPS does not suppress vanilla TPS
+PASS Disabled mod reserves no space and leaves vanilla counters available
+PASS Pause visibility and duplicate handling agree
+PASS Hidden counters discard prior sampling state, including short hidden pauses
+PASS Main menu has no counters
+RESULT 18 runtime checks passed. Native UI pixels were not inspected.

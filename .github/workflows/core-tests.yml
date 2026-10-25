@@ -1,0 +1,16 @@
+name: Core checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Core regression and allocation checks (no game binaries required)
+        run: dotnet run --project Tests/FpsTps.Tests.csproj -c Release

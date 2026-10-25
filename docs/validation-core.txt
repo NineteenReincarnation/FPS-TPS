@@ -1,0 +1,26 @@
+PASS Initial sample waits for a full window
+PASS Configured window is respected
+PASS Normal speed actual TPS
+PASS Actual throughput is not inferred from tick cost
+PASS Pause immediately clears stale TPS
+PASS Resume discards time spent paused
+PASS Fast speed TPS
+PASS Speed change discards mixed-speed window
+PASS Superfast speed TPS
+PASS Tick rewind / save switch resets measurement
+PASS Hidden UI or long loading gap resets measurement
+PASS Recovers after loading gap
+PASS Clock discontinuity resets measurement
+PASS Detailed TPS formatting
+PASS Text cache ignores invisible changes
+PASS Percentage refreshes even when rounded TPS is unchanged
+PASS Paused text omits stale cost and target
+PASS Warm-up marker and target
+PASS Stable invariant numeric display
+PASS Invalid native timing values are sanitized
+PASS Sampler steady-state allocations = 0 bytes
+PASS Unchanged text cache allocations = 0 bytes
+RESULT 22 checks passed.
+BENCH sampler: 6.67 ns/call; 0 bytes / 2,000,000 calls
+BENCH unchanged text: 29.39 ns/call; 0 bytes / 2,000,000 calls
+These are core microbenchmarks, not an in-game FPS overhead measurement.
